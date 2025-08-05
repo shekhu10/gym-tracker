@@ -226,4 +226,3 @@ function SetList({ sets, onChange }: { sets: Set[]; onChange: (s: Set[]) => void
     </div>
   )
 }
-
