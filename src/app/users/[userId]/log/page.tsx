@@ -1,279 +1,228 @@
-"use client"
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-interface SetTemplate {
-  reps: number
-  weight: number
-}
-interface ExerciseTemplate {
-  name: string
-  sets: SetTemplate[]
-}
-interface PlanTemplate {
-  workoutDay: string
-  exercises: ExerciseTemplate[]
-}
+"use client";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import { WorkoutLogForm, WorkoutLog, LogExercise, LogSingleExercise } from "./WorkoutLogForm";
+import { Plan } from "../plan/WeeklyPlanForm";
 
-type SetLog = SetTemplate;
-interface ExerciseLog {
-  name: string
-  sets: SetLog[]
-}
+type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+const dayKeys: DayKey[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const dayLabels: Record<DayKey, string> = {
+  mon: "Monday",
+  tue: "Tuesday", 
+  wed: "Wednesday",
+  thu: "Thursday",
+  fri: "Friday",
+  sat: "Saturday",
+  sun: "Sunday",
+};
 
-type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'
-const dayOrder: DayKey[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-const dayLabel: Record<DayKey, string> = {
-  mon: 'Monday',
-  tue: 'Tuesday',
-  wed: 'Wednesday',
-  thu: 'Thursday',
-  fri: 'Friday',
-  sat: 'Saturday',
-  sun: 'Sunday',
-}
 const dateToDayKey = (iso: string): DayKey => {
-  const idx = new Date(iso + 'T00:00:00').getDay()
-  return dayOrder[(idx + 6) % 7] as DayKey
-}
+  const idx = new Date(iso + "T00:00:00").getDay();
+  return dayKeys[(idx + 6) % 7];
+};
 
-// ---------- main wizard component ----------
-export default function LogWizardPage() {
-  const params = useParams<{ userId: string }>()
-  const userId = params.userId
+const emptyLog: WorkoutLog = {
+  workoutDay: "",
+  exercises: [],
+  date: new Date().toISOString().slice(0, 10),
+};
 
-  // base state
-  const today = new Date().toISOString().slice(0, 10)
-  const [logDate, setLogDate] = useState(today)
-  const [dayKey, setDayKey] = useState<DayKey | null>(dateToDayKey(today))
-  const [plan, setPlan] = useState<PlanTemplate | null>(null)
-  const [entries, setEntries] = useState<ExerciseLog[]>([])
-  const [message, setMessage] = useState('')
+export default function WorkoutLogPage() {
+  const { userId } = useParams<{ userId: string }>();
+  const [currentLog, setCurrentLog] = useState<WorkoutLog>(emptyLog);
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const [selectedDay, setSelectedDay] = useState<DayKey>(dateToDayKey(emptyLog.date));
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  // wizard step
-  // 0: date/day, 1..n: each exercise, n+1: review
-  const [step, setStep] = useState(0)
-
-  // fetch plan when day changes
+  // Fetch plan when day changes
   useEffect(() => {
-    if (!dayKey) return
-    fetch(`/api/users/${userId}/plans/${dayKey}`)
-        .then((r) => (r.ok ? r.json() : null))
-        .then((p: PlanTemplate | null) => {
-          setPlan(p)
-          if (p) {
-            const init = p.exercises.map((ex) => ({
-              name: ex.name,
-              sets: ex.sets.map((s) => ({ ...s })),
-            })) as ExerciseLog[]
-            setEntries(init)
-          }
-        })
-  }, [dayKey, userId])
+    if (!userId || !selectedDay) return;
+    
+    setLoading(true);
+    fetch(`/api/users/${userId}/plans/${selectedDay}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((planData: Plan | null) => {
+        setPlan(planData);
+        if (planData) {
+          // Initialize log from plan template
+          const logExercises: LogExercise[] = planData.exercises.map((exercise) => {
+            if (exercise.type === "circuit") {
+              return {
+                type: "circuit" as const,
+                name: exercise.name,
+                rounds: exercise.rounds,
+                restBetweenExercises: exercise.restBetweenExercises,
+                restBetweenRounds: exercise.restBetweenRounds,
+                restAfterExercise: exercise.restAfterExercise,
+                exercises: exercise.exercises.map((singleEx) => ({
+                  type: "single" as const,
+                  name: singleEx.name,
+                  restBetweenSets: 0,
+                  restAfterExercise: 0,
+                  sets: singleEx.sets.map((set) => {
+                    if ("type" in set && set.type === "strip") {
+                      return {
+                        ...set,
+                        actualSets: set.stripSets.map((s: any) => ({ ...s, completed: false })),
+                        completed: false,
+                      };
+                    } else {
+                      return {
+                        ...set,
+                        completed: false,
+                      };
+                    }
+                  }),
+                  completed: false,
+                })),
+                completed: false,
+              };
+            } else {
+              return {
+                type: "single" as const,
+                name: exercise.name,
+                restBetweenSets: exercise.restBetweenSets,
+                restAfterExercise: exercise.restAfterExercise,
+                sets: exercise.sets.map((set) => {
+                  if ("type" in set && set.type === "strip") {
+                    return {
+                      ...set,
+                      actualSets: set.stripSets.map((s: any) => ({ ...s, completed: false })),
+                      completed: false,
+                    };
+                  } else {
+                    return {
+                      ...set,
+                      completed: false,
+                    };
+                  }
+                }),
+                completed: false,
+              };
+            }
+          });
+          
+          setCurrentLog({
+            workoutDay: planData.workoutDay,
+            exercises: logExercises,
+            date: currentLog.date,
+          });
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+        setMessage("Error loading plan");
+      });
+  }, [userId, selectedDay]);
 
-  // helpers
-  const maxStep = plan ? plan.exercises.length + 1 : 0
-  const next = () => setStep((s) => Math.min(maxStep, s + 1))
-  const back = () => setStep((s) => Math.max(0, s - 1))
+  const handleDateChange = (date: string) => {
+    const newDayKey = dateToDayKey(date);
+    setCurrentLog({ ...currentLog, date });
+    setSelectedDay(newDayKey);
+  };
 
-  function updateExercise(idx: number, ex: ExerciseLog) {
-    const copy = [...entries]
-    copy[idx] = ex
-    setEntries(copy)
-  }
+  const saveLog = async () => {
+    if (!userId) return;
+    
+    setLoading(true);
+    setMessage(null);
+    
+    try {
+      const res = await fetch(`/api/users/${userId}/logs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...currentLog,
+          dayKey: selectedDay,
+        }),
+      });
+      
+      setMessage(res.ok ? "Workout logged successfully!" : "Error saving workout log");
+    } catch (error) {
+      setMessage("Error saving workout log");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  async function submitLog() {
-    if (!dayKey) return
-    const res = await fetch(`/api/users/${userId}/logs`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dayKey, entries, date: logDate }),
-    })
-    setMessage(res.ok ? 'Workout logged!' : 'Error saving log')
-  }
+  const clearLog = () => {
+    if (!confirm("Clear current workout log?")) return;
+    setCurrentLog({ ...emptyLog, date: currentLog.date });
+    setMessage(null);
+  };
 
-  // ---------- per-step UI ----------
-  let content: JSX.Element | null = null
-  if (step === 0) {
-    content = (
-        <div>
-          <label className="block mb-4">
-            <span className="mr-2 font-medium">Date:</span>
+  return (
+    <div className="container-page pb-20">
+      <h1 className="text-2xl font-bold mb-4">Workout Log</h1>
+      
+      {/* Date and Day Selection */}
+      <div className="bg-black border border-gray-600 p-4 rounded-lg mb-6 shadow-sm">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1 text-white">Date</label>
             <input
-                type="date"
-                value={logDate}
-                onChange={(e) => {
-                  setLogDate(e.target.value)
-                  setDayKey(dateToDayKey(e.target.value))
-                }}
-                className="border p-2 rounded"
+              type="date"
+              value={currentLog.date}
+              onChange={(e) => handleDateChange(e.target.value)}
+              className="w-full border rounded p-2"
             />
-          </label>
-          <select
-              value={dayKey ?? ''}
-              onChange={(e) => setDayKey(e.target.value as DayKey)}
-              className="border p-2 rounded"
-          >
-            <option value="" disabled>
-              Select workout day
-            </option>
-            {dayOrder.map((d) => (
-                <option key={d} value={d}>
-                  {dayLabel[d]}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1 text-white">Workout Day</label>
+            <select
+              value={selectedDay}
+              onChange={(e) => setSelectedDay(e.target.value as DayKey)}
+              className="w-full border rounded p-2"
+            >
+              {dayKeys.map((day) => (
+                <option key={day} value={day}>
+                  {dayLabels[day]}
                 </option>
-            ))}
-          </select>
+              ))}
+            </select>
+          </div>
         </div>
-    )
-  } else if (plan && step >= 1 && step <= plan.exercises.length) {
-    const idx = step - 1
-    const tmpl = plan.exercises[idx]
-    const exLog = entries[idx]
-    content = (
-        <div>
-          <h2 className="text-xl font-semibold mb-2">
-            Exercise {step} / {plan.exercises.length}: {tmpl.name}
-          </h2>
-          <SetLogList
-              sets={exLog.sets}
-              targetSets={tmpl.sets}
-              prevSets={[]}
-              onChange={(s) => updateExercise(idx, { ...exLog, sets: s })}
+      </div>
+
+      {loading ? (
+        <p>Loading workout plan...</p>
+      ) : plan ? (
+        <>
+          <WorkoutLogForm
+            log={currentLog}
+            plan={plan}
+            onChange={setCurrentLog}
           />
+          
+          <div className="flex gap-2 mt-6 items-center">
+            <Button variant="primary" onClick={saveLog} disabled={loading}>
+              {loading ? "Saving..." : "Save Workout Log"}
+            </Button>
+            <Button variant="secondary" onClick={clearLog}>
+              Clear Log
+            </Button>
+            {message && (
+              <span className={`ml-2 text-sm ${
+                message.includes("Error") ? "text-red-600" : "text-green-600"
+              }`}>
+                {message}
+              </span>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-8 bg-black border border-gray-600 rounded-lg">
+          <p className="text-gray-200 mb-4">
+            No workout plan found for {dayLabels[selectedDay]}.
+          </p>
+          <p className="text-sm text-gray-400">
+            Create a plan first to start logging workouts.
+          </p>
         </div>
-    )
-  } else if (plan && step === plan.exercises.length + 1) {
-    content = (
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Review</h2>
-          {entries.map((ex, i) => (
-              <div key={i} className="mb-4">
-                <h3 className="font-medium">{ex.name}</h3>
-                <table className="text-sm">
-                  <thead>
-                  <tr>
-                    <th className="pr-4">Set</th>
-                    <th className="pr-4">Reps</th>
-                    <th>Weight</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  {ex.sets.map((s, j) => (
-                      <tr key={j}>
-                        <td className="pr-4">{j + 1}</td>
-                        <td className="pr-4">{s.reps}</td>
-                        <td>{s.weight}</td>
-                      </tr>
-                  ))}
-                  </tbody>
-                </table>
-              </div>
-          ))}
-          <button
-              onClick={submitLog}
-              className="px-6 py-2 bg-green-600 text-white rounded"
-          >
-            Save Log
-          </button>
-          {message && <p className="mt-2 text-green-600">{message}</p>}
-        </div>
-    )
-  }
-
-  // ---------- wrapper ----------
-  return (
-      <div className="p-4 max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Start Workout</h1>
-        {content}
-        <div className="mt-6 flex justify-between">
-          {step > 0 && (
-              <button onClick={back} className="px-4 py-2 bg-gray-300 rounded">
-                Back
-              </button>
-          )}
-          {step < maxStep && (
-              <button
-                  onClick={next}
-                  className="px-4 py-2 bg-blue-600 text-white rounded"
-              >
-                Next
-              </button>
-          )}
-        </div>
-      </div>
-  )
-}
-
-// ---------- SetLogList ----------
-function SetLogList({
-                      sets,
-                      targetSets,
-                      prevSets,
-                      onChange,
-                    }: {
-  sets: SetLog[]
-  targetSets: SetTemplate[]
-  prevSets: SetLog[]
-  onChange: (s: SetLog[]) => void
-}) {
-  function update(idx: number, field: keyof SetLog, value: number) {
-    const copy = sets.map((s, i) => (i === idx ? { ...s, [field]: value } : s))
-    onChange(copy)
-  }
-  function addSet() {
-    onChange([...sets, { reps: 0, weight: 0 }])
-  }
-  function removeSet(idx: number) {
-    onChange(sets.filter((_, i) => i !== idx))
-  }
-  return (
-      <div>
-        <table className="w-full text-sm">
-          <thead>
-          <tr className="text-left">
-            <th className="pr-2">Set</th>
-            <th className="pr-2">Reps</th>
-            <th className="pr-2">Weight</th>
-            <th className="pl-4 text-gray-600">Target</th>
-            <th className="pl-4 text-gray-600">Prev</th>
-            <th></th>
-          </tr>
-          </thead>
-          <tbody>
-          {sets.map((s, i) => (
-              <tr key={i} className="border-t">
-                <td className="pr-2 py-1">{i + 1}</td>
-                <td className="pr-2 py-1">
-                  <input
-                      type="number"
-                      value={s.reps}
-                      onChange={(e) => update(i, 'reps', Number(e.target.value))}
-                      className="w-16 border p-1 rounded"
-                  />
-                </td>
-                <td className="pr-2 py-1">
-                  <input
-                      type="number"
-                      value={s.weight}
-                      onChange={(e) => update(i, 'weight', Number(e.target.value))}
-                      className="w-20 border p-1 rounded"
-                  />
-                </td>
-                <td className="pl-4 text-gray-600">
-                  {targetSets[i] ? `${targetSets[i].reps}×${targetSets[i].weight}` : '-'}
-                </td>
-                <td className="pl-4 text-gray-600">
-                  {prevSets[i] ? `${prevSets[i].reps}×${prevSets[i].weight}` : '-'}
-                </td>
-                <td className="pl-2 text-xs text-red-500">
-                  <button onClick={() => removeSet(i)}>remove</button>
-                </td>
-              </tr>
-          ))}
-          </tbody>
-        </table>
-        <button onClick={addSet} className="text-xs text-blue-600 mt-1">
-          + add set
-        </button>
-      </div>
-  )
+      )}
+    </div>
+  );
 }
