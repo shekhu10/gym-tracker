@@ -9,18 +9,52 @@ const samplePlan = {
   workoutDay: 'Legs',
   exercises: [
     {
-      name: 'exerciseName1',
+      type: 'single',
+      name: 'Leg Press',
+      restBetweenSets: 60,
       sets: [
-        { reps: 10, weight: 10 },
-        { reps: 5, weight: 5 },
+        {
+          reps: 10,
+          weight: 100,
+          type: 'warmup',
+        },
+        {
+          reps: 8,
+          weight: 120,
+          type: 'normal',
+        },
+        {
+          type: 'strip',
+          stripSets: [
+            { reps: 8, weight: 100 },
+            { reps: 6, weight: 80 },
+            { reps: 4, weight: 60 },
+          ],
+        },
       ],
+      restAfterExercise: 90,
     },
     {
-      name: 'exerciseName2',
-      sets: [
-        { reps: 10, weight: 10 },
-        { reps: 5, weight: 5 },
+      type: 'circuit',
+      name: 'Leg Circuit A',
+      restBetweenExercises: 30,
+      restBetweenRounds: 120,
+      rounds: 3,
+      exercises: [
+        {
+          name: 'Jump Squats',
+          sets: [{ reps: 15, weight: 0 }],
+        },
+        {
+          name: 'Walking Lunges',
+          sets: [{ reps: 20, weight: 10, type: 'normal' }],
+        },
+        {
+          name: 'Box Jumps',
+          sets: [{ reps: 12, weight: 0 }],
+        },
       ],
+      restAfterExercise: 90,
     },
   ],
 };
