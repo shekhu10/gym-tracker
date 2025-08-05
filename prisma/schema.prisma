@@ -1,0 +1,42 @@
+// Prisma schema for Gym Tracker
+// Generated on 2025-08-03
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int              @id @default(autoincrement())
+  name          String
+  email         String           @unique
+
+  // Weekly workout plans stored as JSON per weekday
+  monPlan    Json?
+  tuePlan    Json?
+  wedPlan    Json?
+  thuPlan    Json?
+  friPlan    Json?
+  satPlan    Json?
+  sunPlan    Json?
+  createdAt     DateTime         @default(now())
+
+  logs       WorkoutLog[]
+}
+
+model WorkoutLog {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+
+  date      DateTime @default(now())
+  dayName   String
+  planName  String
+  entries   Json
+
+  createdAt DateTime @default(now())
+}
