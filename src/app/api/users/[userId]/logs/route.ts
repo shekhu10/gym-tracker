@@ -1,5 +1,8 @@
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
+
 import { NextRequest, NextResponse } from 'next/server'
+
 
 // Map short weekday key to the corresponding JSON column on User
 const dayToColumn = {
@@ -32,7 +35,7 @@ export async function GET(req: NextRequest, context: { params: { userId: string 
   const dateStr = searchParams.get('date')
   const dayName = searchParams.get('day')
 
-  const where: any = { userId: Number(userId) }
+  const where: Prisma.WorkoutLogWhereInput = { userId: Number(userId) }
   if (dateStr) {
     // filter same calendar date (ignore time)
     const date = new Date(dateStr + 'T00:00:00')

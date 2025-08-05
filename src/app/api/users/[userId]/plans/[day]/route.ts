@@ -22,7 +22,7 @@ export async function GET(
   _req: NextRequest,
   context: { params: { userId: string; day: string } },
 ) {
-  const { userId, day } = await context.params
+  const { userId, day } = context.params
   const col = dayToColumn[day as DayKey]
   if (!col) return badDay(day)
   const user = await prisma.user.findUnique({
