@@ -29,8 +29,8 @@ const currentDayName = (d: Date = new Date()): string => {
 // -------- Handlers --------
 
 // GET /api/users/:userId/logs?date=YYYY-MM-DD&day=Mon
-export async function GET(req: NextRequest, context: { params: { userId: string } }) {
-  const { userId } = await context.params
+export async function GET(req: NextRequest, {params}: any) {
+  const { userId } = await params
   const searchParams = req.nextUrl.searchParams
   const dateStr = searchParams.get('date')
   const dayName = searchParams.get('day')
@@ -51,8 +51,8 @@ export async function GET(req: NextRequest, context: { params: { userId: string 
 
 // POST /api/users/:userId/logs
 // Body: { dayKey: 'mon', entries: [...], date?: 'YYYY-MM-DD' }
-export async function POST(req: NextRequest, context: { params: { userId: string } }) {
-  const { userId } = context.params
+export async function POST(req: NextRequest, {params}: any) {
+  const { userId } = params
   const body = await req.json()
   const { dayKey, entries, date } = body as { dayKey: DayKey; entries: unknown; date?: string }
 

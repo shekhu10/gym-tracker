@@ -20,9 +20,9 @@ function badDay(day: string) {
 
 export async function GET(
   _req: NextRequest,
-  context: { params: { userId: string; day: string } },
+  { params }: any,
 ) {
-  const { userId, day } = context.params
+  const { userId, day } = params
   const col = dayToColumn[day as DayKey]
   if (!col) return badDay(day)
   const user = await prisma.user.findUnique({
@@ -35,9 +35,9 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  context: { params: { userId: string; day: string } },
+  { params }: any,
 ) {
-  const { userId, day } = await context.params
+  const { userId, day } = await params
   const col = dayToColumn[day as DayKey]
   if (!col) return badDay(day)
 
@@ -53,9 +53,9 @@ export async function PUT(
 
 export async function DELETE(
   _req: NextRequest,
-  context: { params: { userId: string; day: string } },
+  { params }: any,
 ) {
-  const { userId, day } = await context.params
+  const { userId, day } = await params
   const col = dayToColumn[day as DayKey]
   if (!col) return badDay(day)
 

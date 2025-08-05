@@ -14,7 +14,7 @@ interface PlanTemplate {
   exercises: ExerciseTemplate[]
 }
 
-interface SetLog extends SetTemplate {}
+type SetLog = SetTemplate;
 interface ExerciseLog {
   name: string
   sets: SetLog[]

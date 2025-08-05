@@ -5,9 +5,9 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
     _req: NextRequest,
-    context: { params: { userId: string; logId: string } }
+    {params}: any
 ) {
-  const { userId, logId } = context.params
+  const { userId, logId } = params
   const log = await prisma.workoutLog.findFirst({
     where: {
       id: Number(logId),
@@ -22,9 +22,9 @@ export async function GET(
 
 export async function PUT(
     req: NextRequest,
-    context: { params: { userId: string; logId: string } }
+    {params}: any
 ) {
-  const { userId, logId } = context.params
+  const { userId, logId } = params
   const body = await req.json()
   const { entries } = body as { entries: unknown }
   if (!entries) {
@@ -42,9 +42,9 @@ export async function PUT(
 
 export async function DELETE(
     _req: NextRequest,
-    context: { params: { userId: string; logId: string } }
+     { params }: any
 ) {
-  const { userId, logId } = context.params
+  const { userId, logId } = params
   await prisma.workoutLog.delete({
     where: {
       id: Number(logId),
