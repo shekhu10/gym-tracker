@@ -3,25 +3,60 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
 interface SetLog {
-  reps: number
-  weight: number
+  reps: number | ""
+  weight: number | ""
+  type?: "warmup" | "normal"
+  completed?: boolean
 }
-interface ExerciseLog {
+
+interface StripSet {
+  type: "strip"
+  stripSets: { reps: number; weight: number }[]
+  actualSets?: SetLog[]
+  completed?: boolean
+}
+
+type SetItem = SetLog | StripSet
+
+interface SingleExercise {
+  type: "single"
   name: string
-  sets: SetLog[]
+  sets: SetItem[]
+  restBetweenSets?: number
+  restAfterExercise?: number
+  completed?: boolean
 }
+
+interface CircuitExercise {
+  type: "circuit"
+  name: string
+  rounds: number
+  exercises: SingleExercise[]
+  restBetweenExercises?: number
+  restBetweenRounds?: number
+  restAfterExercise?: number
+  completed?: boolean
+}
+
+type Exercise = SingleExercise | CircuitExercise
+
 interface WorkoutLog {
   id: number
   date: string
   dayName: string
   planName: string
-  entries: ExerciseLog[]
+  entries: {
+    exercises: Exercise[]
+    startTime?: string
+    endTime?: string
+    notes?: string
+  }
 }
 
 export default function LogDetailPage() {
   const params = useParams<{ userId: string; logId: string }>()
   const router = useRouter()
-  const { userId, logId } = await params
+  const { userId, logId } = params
   const [log, setLog] = useState<WorkoutLog | null>(null)
   const [error, setError] = useState('')
 
@@ -36,16 +71,16 @@ export default function LogDetailPage() {
     })()
   }, [userId, logId])
 
-  if (error) return <p className="p-4 text-red-600">{error}</p>
-  if (!log) return <p className="p-4">Loading...</p>
+  if (error) return <div className="p-4 bg-black min-h-screen"><p className="text-red-400">{error}</p></div>
+  if (!log) return <div className="p-4 bg-black min-h-screen"><p className="text-white">Loading...</p></div>
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <button onClick={() => router.back()} className="text-blue-600 mb-4 underline">
+    <div className="p-4 max-w-2xl mx-auto bg-black min-h-screen">
+      <button onClick={() => router.back()} className="text-blue-400 mb-4 underline hover:text-blue-300">
         ← Back
       </button>
-      <h1 className="text-2xl font-bold mb-2">{log.planName}</h1>
-      <p className="mb-4 text-gray-600">
+      <h1 className="text-2xl font-bold mb-2 text-white">{log.planName}</h1>
+      <p className="mb-4 text-gray-300">
         {new Date(log.date).toLocaleDateString('en-US', {
           weekday: 'long',
           year: 'numeric',
@@ -55,29 +90,128 @@ export default function LogDetailPage() {
         {` (${log.dayName})`}
       </p>
 
-      {log.entries.map((ex, i) => (
-        <div key={i} className="border p-3 rounded mb-4">
-          <h3 className="font-medium mb-2">{ex.name}</h3>
-          <table className="text-sm w-full">
-            <thead>
-              <tr className="text-left border-b">
-                <th className="pr-2 py-1">Set</th>
-                <th className="pr-2 py-1">Reps</th>
-                <th className="py-1">Weight</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ex.sets.map((s, idx) => (
-                <tr key={idx} className="border-t">
-                  <td className="pr-2 py-1">{idx + 1}</td>
-                  <td className="pr-2 py-1">{s.reps}</td>
-                  <td className="py-1">{s.weight}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Workout timing and notes */}
+      {(log.entries.startTime || log.entries.endTime || log.entries.notes) && (
+        <div className="bg-gray-900 border border-gray-600 p-4 rounded mb-4">
+          {log.entries.startTime && (
+            <p className="text-sm mb-1 text-gray-200">
+              <strong className="text-white">Start Time:</strong> {log.entries.startTime}
+            </p>
+          )}
+          {log.entries.endTime && (
+            <p className="text-sm mb-1 text-gray-200">
+              <strong className="text-white">End Time:</strong> {log.entries.endTime}
+            </p>
+          )}
+          {log.entries.notes && (
+            <p className="text-sm text-gray-200">
+              <strong className="text-white">Notes:</strong> {log.entries.notes}
+            </p>
+          )}
         </div>
+      )}
+
+      {/* Exercises */}
+      {log.entries.exercises?.map((ex, i) => (
+        <ExerciseDisplay key={i} exercise={ex} />
       ))}
     </div>
+  )
+}
+
+function ExerciseDisplay({ exercise }: { exercise: Exercise }) {
+  if (exercise.type === "circuit") {
+    return (
+      <div className="border border-blue-400 p-4 rounded mb-4 bg-gray-900">
+        <h3 className="font-medium mb-2 text-blue-300">
+          Circuit: {exercise.name} ({exercise.rounds} rounds)
+          {exercise.completed && <span className="ml-2 text-green-400">✓</span>}
+        </h3>
+        <div className="space-y-3">
+          {exercise.exercises.map((singleEx, idx) => (
+            <div key={idx} className="bg-black p-3 rounded border border-gray-600">
+              <h4 className="font-medium mb-2 text-white">
+                {singleEx.name}
+                {singleEx.completed && <span className="ml-2 text-green-400">✓</span>}
+              </h4>
+              <SetsTable sets={singleEx.sets} />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="border border-gray-600 p-3 rounded mb-4 bg-gray-900">
+      <h3 className="font-medium mb-2 text-white">
+        {exercise.name}
+        {exercise.completed && <span className="ml-2 text-green-400">✓</span>}
+      </h3>
+      <SetsTable sets={exercise.sets} />
+    </div>
+  )
+}
+
+function SetsTable({ sets }: { sets: SetItem[] }) {
+  return (
+    <table className="text-sm w-full">
+      <thead>
+        <tr className="text-left border-b border-gray-600">
+          <th className="pr-2 py-1 text-gray-300">Set</th>
+          <th className="pr-2 py-1 text-gray-300">Type</th>
+          <th className="pr-2 py-1 text-gray-300">Reps</th>
+          <th className="pr-2 py-1 text-gray-300">Weight</th>
+          <th className="py-1 text-gray-300">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sets.map((set, idx) => {
+          if (set.type === "strip") {
+            return (
+              <tr key={idx} className="border-t border-gray-700">
+                <td className="pr-2 py-1 text-gray-200">{idx + 1}</td>
+                <td className="pr-2 py-1 text-orange-400">Strip Set</td>
+                <td className="pr-2 py-1 text-gray-200">
+                  {set.stripSets.map(s => s.reps).join(", ")}
+                </td>
+                <td className="pr-2 py-1 text-gray-200">
+                  {set.stripSets.map(s => s.weight).join(", ")}
+                </td>
+                <td className="py-1">
+                  {set.completed ? (
+                    <span className="text-green-400">✓</span>
+                  ) : (
+                    <span className="text-gray-500">-</span>
+                  )}
+                </td>
+              </tr>
+            )
+          }
+
+          return (
+            <tr key={idx} className="border-t border-gray-700">
+              <td className="pr-2 py-1 text-gray-200">{idx + 1}</td>
+              <td className="pr-2 py-1">
+                {set.type === "warmup" ? (
+                  <span className="text-yellow-400">Warmup</span>
+                ) : (
+                  <span className="text-gray-300">Normal</span>
+                )}
+              </td>
+              <td className="pr-2 py-1 text-gray-200">{set.reps}</td>
+              <td className="pr-2 py-1 text-gray-200">{set.weight}</td>
+              <td className="py-1">
+                {set.completed ? (
+                  <span className="text-green-400">✓</span>
+                ) : (
+                  <span className="text-gray-500">-</span>
+                )}
+              </td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
   )
 }

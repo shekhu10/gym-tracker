@@ -7,7 +7,12 @@ interface WorkoutLog {
   date: string
   dayName: string
   planName: string
-  entries: any
+  entries: {
+    exercises: any[]
+    startTime?: string
+    endTime?: string
+    notes?: string
+  }
 }
 
 export default function HistoryPage() {
@@ -38,33 +43,33 @@ export default function HistoryPage() {
   }, {})
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Workout History</h1>
-      {error && <p className="text-red-600 mb-4">{error}</p>}
-      {Object.keys(grouped).length === 0 && <p>No logs yet.</p>}
+    <div className="p-4 max-w-3xl mx-auto bg-black min-h-screen">
+      <h1 className="text-2xl font-bold mb-4 text-white">Workout History</h1>
+      {error && <p className="text-red-400 mb-4">{error}</p>}
+      {Object.keys(grouped).length === 0 && <p className="text-gray-300">No logs yet.</p>}
       {Object.entries(grouped)
         .sort(([a], [b]) => (a > b ? -1 : 1))
         .map(([date, logs]) => (
-          <div key={date} className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">{formatDate(date)}</h2>
+          <div key={date} className="mb-6 bg-gray-900 p-4 rounded-lg border border-gray-600">
+            <h2 className="text-xl font-semibold mb-2 text-white">{formatDate(date)}</h2>
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left border-b">
-                  <th className="pr-2 py-1">Plan</th>
-                  <th className="pr-2 py-1">Day</th>
-                  <th className="py-1">Sets Logged</th>
+                <tr className="text-left border-b border-gray-600">
+                  <th className="pr-2 py-1 text-gray-300">Plan</th>
+                  <th className="pr-2 py-1 text-gray-300">Day</th>
+                  <th className="py-1 text-gray-300">Sets Logged</th>
                 </tr>
               </thead>
               <tbody>
                 {logs.map((log) => (
-                  <tr key={log.id} className="border-t">
+                  <tr key={log.id} className="border-t border-gray-700">
                     <td className="pr-2 py-1">
-                      <a href={`/users/${userId}/history/${log.id}`} className="text-blue-600 underline">
+                      <a href={`/users/${userId}/history/${log.id}`} className="text-blue-400 underline hover:text-blue-300">
                         {log.planName}
                       </a>
                     </td>
-                    <td className="pr-2 py-1">{log.dayName}</td>
-                    <td className="py-1">{totalSets(log.entries)}</td>
+                    <td className="pr-2 py-1 text-gray-200">{log.dayName}</td>
+                    <td className="py-1 text-gray-200">{totalSets(log.entries)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -82,10 +87,21 @@ function formatDate(iso: string): string {
 }
 
 function totalSets(entries: any): number {
-  if (!Array.isArray(entries)) return 0
+  // Handle new structure where entries is an object with exercises array
+  const exercises = entries?.exercises || entries
+  if (!Array.isArray(exercises)) return 0
+  
   let total = 0
-  for (const ex of entries) {
-    if (Array.isArray(ex.sets)) total += ex.sets.length
+  for (const ex of exercises) {
+    if (ex.type === "circuit" && Array.isArray(ex.exercises)) {
+      // Count sets in circuit exercises
+      for (const circuitEx of ex.exercises) {
+        if (Array.isArray(circuitEx.sets)) total += circuitEx.sets.length
+      }
+    } else if (Array.isArray(ex.sets)) {
+      // Count sets in single exercises
+      total += ex.sets.length
+    }
   }
   return total
 }
