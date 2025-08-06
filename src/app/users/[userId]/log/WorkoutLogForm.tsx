@@ -154,18 +154,8 @@ function ExerciseLogEditor({ exercise, planExercise, previousWeekExercise, onCha
   if (exercise.type === "circuit") {
     return (
       <div className="border border-blue-400 rounded-lg p-4 bg-black shadow-sm">
-        <div className="flex items-center justify-between mb-3">
+        <div className="mb-3">
           <h4 className="font-semibold text-blue-300">Circuit: {exercise.name}</h4>
-          <div className="flex items-center gap-2">
-            <label className="flex items-center gap-1 text-sm">
-              <input
-                type="checkbox"
-                checked={exercise.completed || false}
-                onChange={toggleCompleted}
-              />
-              Completed
-            </label>
-          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
@@ -245,50 +235,28 @@ function SingleExerciseLogEditor({ exercise, planExercise, previousWeekExercise,
     updateExercise({ sets: newSets });
   };
 
-  const toggleCompleted = () => {
-    updateExercise({ completed: !exercise.completed });
-  };
-
   const bgColor = isInCircuit ? "bg-gray-900" : "bg-black";
-  const borderColor = exercise.completed ? "border-green-400" : "border-gray-600";
+  const borderColor = "border-gray-600";
 
   return (
     <div className={`border rounded-lg p-4 ${bgColor} ${borderColor}`}>
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3">
         <h4 className="font-semibold text-white">{exercise.name}</h4>
-        <label className="flex items-center gap-1 text-sm">
-          <input
-            type="checkbox"
-            checked={exercise.completed || false}
-            onChange={toggleCompleted}
-          />
-          Completed
-        </label>
       </div>
 
       {!isInCircuit && (
         <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
           <div>
             <span className="text-gray-300">Rest Between Sets: </span>
-            <input
-              type="number"
-              value={exercise.actualRestBetweenSets || exercise.restBetweenSets || ""}
-              onChange={(e) => updateExercise({ actualRestBetweenSets: Number(e.target.value) })}
-              className="w-16 border rounded px-1"
-              placeholder={exercise.restBetweenSets?.toString()}
-            />
-            <span className="ml-1 text-gray-500">sec</span>
+            <span className="text-gray-400">
+              {exercise.restBetweenSets || (planExercise && 'restBetweenSets' in planExercise ? planExercise.restBetweenSets : 'N/A')} sec
+            </span>
           </div>
           <div>
             <span className="text-gray-300">Rest After Exercise: </span>
-            <input
-              type="number"
-              value={exercise.actualRestAfterExercise || exercise.restAfterExercise || ""}
-              onChange={(e) => updateExercise({ actualRestAfterExercise: Number(e.target.value) })}
-              className="w-16 border rounded px-1"
-              placeholder={exercise.restAfterExercise?.toString()}
-            />
-            <span className="ml-1 text-gray-500">sec</span>
+            <span className="text-gray-400">
+              {exercise.restAfterExercise || (planExercise && 'restAfterExercise' in planExercise ? planExercise.restAfterExercise : 'N/A')} sec
+            </span>
           </div>
         </div>
       )}
@@ -335,14 +303,6 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
         <div className="flex items-center justify-between mb-2">
           <span className="font-medium text-orange-300">Set {setNumber} - Strip Set</span>
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-1 text-sm">
-              <input
-                type="checkbox"
-                checked={set.completed || false}
-                onChange={(e) => onChange({ ...set, completed: e.target.checked })}
-              />
-              Completed
-            </label>
             <Button variant="secondary" size="sm" onClick={onRemove} className="text-red-600">
               Remove
             </Button>
@@ -376,18 +336,7 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
                 className="w-20 border border-gray-600 rounded px-1 bg-gray-800 text-white"
                 placeholder="Weight"
               />
-              <label className="flex items-center gap-1 text-xs">
-                <input
-                  type="checkbox"
-                  checked={actualSet.completed || false}
-                  onChange={(e) => {
-                    const newActualSets = [...set.actualSets];
-                    newActualSets[index] = { ...actualSet, completed: e.target.checked };
-                    onChange({ ...set, actualSets: newActualSets });
-                  }}
-                />
-                ✓
-              </label>
+
             </div>
           ))}
         </div>
@@ -441,14 +390,6 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
       </div>
       
       <div className="flex items-center gap-2 ml-auto">
-        <label className="flex items-center gap-1 text-sm">
-          <input
-            type="checkbox"
-            checked={set.completed || false}
-            onChange={(e) => onChange({ ...set, completed: e.target.checked })}
-          />
-          ✓
-        </label>
         <Button variant="secondary" size="sm" onClick={onRemove} className="text-red-600">
           Remove
         </Button>
