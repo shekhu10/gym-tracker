@@ -20,6 +20,7 @@ export default function HistoryPage() {
   const userId = params.userId
   const [logs, setLogs] = useState<WorkoutLog[]>([])
   const [error, setError] = useState('')
+  const [deleting, setDeleting] = useState<number | null>(null)
 
   useEffect(() => {
     ;(async () => {
@@ -33,6 +34,31 @@ export default function HistoryPage() {
       }
     })()
   }, [userId])
+
+  const handleDelete = async (logId: number) => {
+    if (!confirm('Are you sure you want to delete this workout log?')) {
+      return
+    }
+
+    setDeleting(logId)
+    try {
+      const res = await fetch(`/api/users/${userId}/logs/${logId}`, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        // Remove the deleted log from the state
+        setLogs(logs.filter(log => log.id !== logId))
+      } else {
+        const errorData = await res.json()
+        setError(errorData.error || 'Failed to delete workout log')
+      }
+    } catch (err) {
+      setError('Failed to delete workout log')
+    } finally {
+      setDeleting(null)
+    }
+  }
 
   // group logs by YYYY-MM-DD
   const grouped = logs.reduce<Record<string, WorkoutLog[]>>((acc, log) => {
@@ -57,7 +83,8 @@ export default function HistoryPage() {
                 <tr className="text-left border-b border-gray-600">
                   <th className="pr-2 py-1 text-gray-300">Plan</th>
                   <th className="pr-2 py-1 text-gray-300">Day</th>
-                  <th className="py-1 text-gray-300">Sets Logged</th>
+                  <th className="pr-2 py-1 text-gray-300">Sets Logged</th>
+                  <th className="py-1 text-gray-300">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -69,7 +96,16 @@ export default function HistoryPage() {
                       </a>
                     </td>
                     <td className="pr-2 py-1 text-gray-200">{log.dayName}</td>
-                    <td className="py-1 text-gray-200">{totalSets(log.entries)}</td>
+                    <td className="pr-2 py-1 text-gray-200">{totalSets(log.entries)}</td>
+                    <td className="py-1">
+                      <button
+                        onClick={() => handleDelete(log.id)}
+                        disabled={deleting === log.id}
+                        className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed"
+                      >
+                        {deleting === log.id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
