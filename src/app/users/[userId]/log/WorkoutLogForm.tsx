@@ -85,37 +85,7 @@ export function WorkoutLogForm({ log, plan, previousWeekLog, onChange }: Workout
           />
         </div>
         
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-white">Start Time</label>
-            <input
-              type="time"
-              value={log.startTime || ""}
-              onChange={(e) => updateLog({ startTime: e.target.value })}
-              className="w-full border rounded p-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-white">End Time</label>
-            <input
-              type="time"
-              value={log.endTime || ""}
-              onChange={(e) => updateLog({ endTime: e.target.value })}
-              className="w-full border rounded p-2"
-            />
-          </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1 text-white">Notes</label>
-          <textarea
-            value={log.notes || ""}
-            onChange={(e) => updateLog({ notes: e.target.value })}
-            className="w-full border rounded p-2"
-            rows={2}
-            placeholder="How did the workout feel? Any observations..."
-          />
-        </div>
       </div>
 
       {/* Exercises */}
@@ -315,7 +285,7 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
               <span className="text-sm w-8">{index + 1}:</span>
               <input
                 type="number"
-                value={actualSet.reps}
+                defaultValue={""}
                 onChange={(e) => {
                   const newActualSets = [...set.actualSets];
                   newActualSets[index] = { ...actualSet, reps: Number(e.target.value) };
@@ -327,7 +297,7 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
               <span className="text-sm">×</span>
               <input
                 type="number"
-                value={actualSet.weight}
+                defaultValue={""}
                 onChange={(e) => {
                   const newActualSets = [...set.actualSets];
                   newActualSets[index] = { ...actualSet, weight: Number(e.target.value) };
@@ -362,7 +332,7 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
       <span className="text-sm font-medium w-12 text-white">Set {setNumber}</span>
       <input
         type="number"
-        value={set.reps}
+        defaultValue={""}
         onChange={(e) => onChange({ ...set, reps: Number(e.target.value) })}
         className="w-16 border border-gray-600 rounded px-2 py-1 bg-gray-800 text-white"
         placeholder="Reps"
@@ -370,7 +340,7 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
       <span className="text-sm">×</span>
       <input
         type="number"
-        value={set.weight}
+        defaultValue={""}
         onChange={(e) => onChange({ ...set, weight: Number(e.target.value) })}
         className="w-20 border border-gray-600 rounded px-2 py-1 bg-gray-800 text-white"
         placeholder="Weight"
