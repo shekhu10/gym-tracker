@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
+import { userDb } from '@/lib/db'
 
 interface Props {
   params: { userId: string }
@@ -9,12 +9,12 @@ interface Props {
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: Props) {
-  const user = await prisma.user.findUnique({ where: { id: Number(params.userId) } })
+  const user = await userDb.findUnique(Number(params.userId))
   return { title: user ? `${user.name} – User` : 'User not found' }
 }
 
 export default async function UserDetailPage({ params }: Props) {
-  const user = await prisma.user.findUnique({ where: { id: Number(params.userId) } })
+  const user = await userDb.findUnique(Number(params.userId))
   if (!user) notFound()
 
   return (

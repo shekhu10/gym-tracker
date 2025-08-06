@@ -1,10 +1,10 @@
-import { prisma } from '@/lib/prisma'
+import { userDb } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 
 // GET /api/users/:userId - fetch single user
 export async function GET(_req: NextRequest, { params }: { params: { userId: string } }) {
   const { userId } = await params
-  const user = await prisma.user.findUnique({ where: { id: Number(userId) } })
+  const user = await userDb.findUnique(Number(userId))
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
   return NextResponse.json(user)
 }
@@ -18,10 +18,13 @@ export async function PUT(req: NextRequest, { params }: { params: { userId: stri
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
   }
   try {
-    const user = await prisma.user.update({ where: { id: Number(userId) }, data: { name, email } })
+    const user = await userDb.update(Number(userId), { name, email })
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
     return NextResponse.json(user)
   } catch (err: any) {
-    if (err.code === 'P2002') {
+    if (err.message?.includes('duplicate key') || err.code === '23505') {
       return NextResponse.json({ error: 'Email already exists' }, { status: 409 })
     }
     console.error('Failed to update user:', err)
@@ -33,7 +36,10 @@ export async function PUT(req: NextRequest, { params }: { params: { userId: stri
 export async function DELETE(_req: NextRequest, { params }: { params: { userId: string } }) {
   const { userId } = await params
   try {
-    await prisma.user.delete({ where: { id: Number(userId) } })
+    const deletedUser = await userDb.delete(Number(userId))
+    if (!deletedUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('Failed to delete user:', err)
