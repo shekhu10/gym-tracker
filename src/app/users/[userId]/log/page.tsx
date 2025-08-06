@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { WorkoutLogForm, WorkoutLog, LogExercise, LogSingleExercise } from "./WorkoutLogForm";
-import { Plan } from "../plan/WeeklyPlanForm";
+import { Plan, StripSet, Exercise, SingleExercise, SetItem } from "../plan/WeeklyPlanForm";
 
 type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 const dayKeys: DayKey[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
@@ -32,22 +32,34 @@ export default function WorkoutLogPage() {
   const { userId } = useParams<{ userId: string }>();
   const [currentLog, setCurrentLog] = useState<WorkoutLog>(emptyLog);
   const [plan, setPlan] = useState<Plan | null>(null);
+  const [previousWeekLog, setPreviousWeekLog] = useState<any>(null);
   const [selectedDay, setSelectedDay] = useState<DayKey>(dateToDayKey(emptyLog.date));
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  // Fetch plan when day changes
+  // Fetch plan and previous week's data when day changes
   useEffect(() => {
     if (!userId || !selectedDay) return;
     
     setLoading(true);
-    fetch(`/api/users/${userId}/plans/${selectedDay}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((planData: Plan | null) => {
+    
+    // Fetch both plan and previous week's log data in parallel
+    const planPromise = fetch(`/api/users/${userId}/plans/${selectedDay}`)
+      .then((r) => (r.ok ? r.json() : null));
+    
+    const dayName = dayLabels[selectedDay];
+    // Convert full day name to short format for database query
+    const shortDayName = dayName.substring(0, 3); // "Tuesday" -> "Tue"
+    const previousWeekPromise = fetch(`/api/users/${userId}/logs?previousWeek=true&date=${currentLog.date}&day=${shortDayName}`)
+      .then((r) => (r.ok ? r.json() : null));
+    
+    Promise.all([planPromise, previousWeekPromise])
+      .then(([planData, previousWeekData]) => {
         setPlan(planData);
+        setPreviousWeekLog(previousWeekData);
         if (planData) {
           // Initialize log from plan template
-          const logExercises: LogExercise[] = planData.exercises.map((exercise) => {
+          const logExercises: LogExercise[] = planData.exercises.map((exercise: Exercise) => {
             if (exercise.type === "circuit") {
               return {
                 type: "circuit" as const,
@@ -56,16 +68,17 @@ export default function WorkoutLogPage() {
                 restBetweenExercises: exercise.restBetweenExercises,
                 restBetweenRounds: exercise.restBetweenRounds,
                 restAfterExercise: exercise.restAfterExercise,
-                exercises: exercise.exercises.map((singleEx) => ({
+                exercises: exercise.exercises.map((singleEx: any) => ({
                   type: "single" as const,
                   name: singleEx.name,
                   restBetweenSets: 0,
                   restAfterExercise: 0,
-                  sets: singleEx.sets.map((set) => {
-                    if ("type" in set && set.type === "strip") {
+                  sets: singleEx.sets.map((set: SetItem) => {
+                    if ('stripSets' in set) {
+                      const stripSet = set as unknown as StripSet;
                       return {
-                        ...set,
-                        actualSets: set.stripSets.map((s: any) => ({ ...s, completed: false })),
+                        ...stripSet,
+                        actualSets: stripSet.stripSets.map((s: any) => ({ ...s, completed: false })),
                         completed: false,
                       };
                     } else {
@@ -85,11 +98,12 @@ export default function WorkoutLogPage() {
                 name: exercise.name,
                 restBetweenSets: exercise.restBetweenSets,
                 restAfterExercise: exercise.restAfterExercise,
-                sets: exercise.sets.map((set) => {
-                  if ("type" in set && set.type === "strip") {
+                sets: exercise.sets.map((set: SetItem) => {
+                  if ('stripSets' in set) {
+                    const stripSet = set as unknown as StripSet;
                     return {
-                      ...set,
-                      actualSets: set.stripSets.map((s: any) => ({ ...s, completed: false })),
+                      ...stripSet,
+                      actualSets: stripSet.stripSets.map((s: any) => ({ ...s, completed: false })),
                       completed: false,
                     };
                   } else {
@@ -194,6 +208,7 @@ export default function WorkoutLogPage() {
           <WorkoutLogForm
             log={currentLog}
             plan={plan}
+            previousWeekLog={previousWeekLog}
             onChange={setCurrentLog}
           />
           

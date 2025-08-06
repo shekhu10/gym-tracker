@@ -229,7 +229,33 @@ export const workoutLogDb = {
       RETURNING id
     `
     return result[0] || null
-  }
+  },
+
+  // Find workout log from previous week (7 days back) for the same day
+  async findPreviousWeekLog(userId: number, dayName: string, currentDate: string) {
+    // Calculate date 7 days back
+    const currentDateObj = new Date(currentDate)
+    const previousWeekDate = new Date(currentDateObj)
+    previousWeekDate.setDate(currentDateObj.getDate() - 7)
+    const previousWeekDateStr = previousWeekDate.toISOString().split('T')[0]
+    
+    const result = await sql`
+      SELECT id, "userId", date, "dayName", 
+             "planName", entries, "createdAt"
+      FROM "WorkoutLog"
+      WHERE "userId" = ${userId} 
+        AND "dayName" = ${dayName}
+        AND DATE(date) = ${previousWeekDateStr}
+      ORDER BY "createdAt" ASC
+      LIMIT 1
+    `
+    const log = result[0] || null
+    if (log) {
+      // Parse JSON entries if they are strings
+      log.entries = typeof log.entries === 'string' ? JSON.parse(log.entries) : log.entries
+    }
+    return log
+  },
 }
 
 export default sql

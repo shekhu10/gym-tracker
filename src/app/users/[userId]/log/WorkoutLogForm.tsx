@@ -55,10 +55,11 @@ export interface WorkoutLog {
 interface WorkoutLogFormProps {
   log: WorkoutLog;
   plan?: Plan; // Template plan for reference
+  previousWeekLog?: any; // Previous week's log data for comparison
   onChange: (log: WorkoutLog) => void;
 }
 
-export function WorkoutLogForm({ log, plan, onChange }: WorkoutLogFormProps) {
+export function WorkoutLogForm({ log, plan, previousWeekLog, onChange }: WorkoutLogFormProps) {
   const updateLog = (updates: Partial<WorkoutLog>) => {
     onChange({ ...log, ...updates });
   };
@@ -125,6 +126,7 @@ export function WorkoutLogForm({ log, plan, onChange }: WorkoutLogFormProps) {
             key={index}
             exercise={exercise}
             planExercise={plan?.exercises[index]}
+            previousWeekExercise={previousWeekLog?.entries?.exercises?.[index]}
             onChange={(updatedExercise) => updateExercise(index, updatedExercise)}
           />
         ))}
@@ -136,10 +138,11 @@ export function WorkoutLogForm({ log, plan, onChange }: WorkoutLogFormProps) {
 interface ExerciseLogEditorProps {
   exercise: LogExercise;
   planExercise?: Exercise;
+  previousWeekExercise?: any;
   onChange: (exercise: LogExercise) => void;
 }
 
-function ExerciseLogEditor({ exercise, planExercise, onChange }: ExerciseLogEditorProps) {
+function ExerciseLogEditor({ exercise, planExercise, previousWeekExercise, onChange }: ExerciseLogEditorProps) {
   const updateExercise = (updates: Partial<LogExercise>) => {
     onChange({ ...exercise, ...updates });
   };
@@ -189,6 +192,7 @@ function ExerciseLogEditor({ exercise, planExercise, onChange }: ExerciseLogEdit
               key={index}
               exercise={singleEx}
               planExercise={planExercise?.type === "circuit" ? planExercise.exercises[index] : undefined}
+              previousWeekExercise={previousWeekExercise?.exercises?.[index]}
               onChange={(updated) => {
                 const newExercises = [...exercise.exercises];
                 newExercises[index] = updated;
@@ -206,6 +210,7 @@ function ExerciseLogEditor({ exercise, planExercise, onChange }: ExerciseLogEdit
     <SingleExerciseLogEditor
       exercise={exercise}
       planExercise={planExercise}
+      previousWeekExercise={previousWeekExercise}
       onChange={onChange}
     />
   );
@@ -214,11 +219,12 @@ function ExerciseLogEditor({ exercise, planExercise, onChange }: ExerciseLogEdit
 interface SingleExerciseLogEditorProps {
   exercise: LogSingleExercise;
   planExercise?: Exercise;
+  previousWeekExercise?: any;
   onChange: (exercise: LogSingleExercise) => void;
   isInCircuit?: boolean;
 }
 
-function SingleExerciseLogEditor({ exercise, planExercise, onChange, isInCircuit = false }: SingleExerciseLogEditorProps) {
+function SingleExerciseLogEditor({ exercise, planExercise, previousWeekExercise, onChange, isInCircuit = false }: SingleExerciseLogEditorProps) {
   const updateExercise = (updates: Partial<LogSingleExercise>) => {
     onChange({ ...exercise, ...updates });
   };
@@ -293,6 +299,7 @@ function SingleExerciseLogEditor({ exercise, planExercise, onChange, isInCircuit
             key={index}
             set={set}
             planSet={planExercise?.type === "single" ? planExercise.sets[index] : undefined}
+            previousWeekSet={previousWeekExercise?.sets?.[index]}
             onChange={(updated) => updateSet(index, updated)}
             onRemove={() => removeSet(index)}
             setNumber={index + 1}
@@ -315,12 +322,13 @@ function SingleExerciseLogEditor({ exercise, planExercise, onChange, isInCircuit
 interface SetLogEditorProps {
   set: LogSetItem;
   planSet?: SetItem;
+  previousWeekSet?: any;
   onChange: (set: LogSetItem) => void;
   onRemove: () => void;
   setNumber: number;
 }
 
-function SetLogEditor({ set, planSet, onChange, onRemove, setNumber }: SetLogEditorProps) {
+function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNumber }: SetLogEditorProps) {
   if (set.type === "strip") {
     return (
       <div className="border border-orange-400 rounded p-3 bg-black shadow-sm">
@@ -419,11 +427,18 @@ function SetLogEditor({ set, planSet, onChange, onRemove, setNumber }: SetLogEdi
         placeholder="Weight"
       />
       
-      {planSet && planSet.type !== "strip" && (
-        <div className="text-xs text-gray-400">
-          Target: {planSet.reps}×{planSet.weight}
-        </div>
-      )}
+      <div className="flex flex-col gap-1">
+        {planSet && planSet.type !== "strip" && (
+          <div className="text-xs text-gray-400">
+            Target: {planSet.reps}×{planSet.weight}
+          </div>
+        )}
+        {previousWeekSet && previousWeekSet.reps && previousWeekSet.weight && (
+          <div className="text-xs text-blue-400">
+            Last week: {previousWeekSet.reps}×{previousWeekSet.weight}
+          </div>
+        )}
+      </div>
       
       <div className="flex items-center gap-2 ml-auto">
         <label className="flex items-center gap-1 text-sm">

@@ -27,12 +27,19 @@ const currentDayName = (d: Date = new Date()): string => {
 
 // -------- Handlers --------
 
-// GET /api/users/:userId/logs?date=YYYY-MM-DD&day=Mon
+// GET /api/users/:userId/logs?date=YYYY-MM-DD&day=Mon&previousWeek=true
 export async function GET(req: NextRequest, {params}: any) {
   const { userId } = await params
   const searchParams = req.nextUrl.searchParams
   const dateStr = searchParams.get('date')
   const dayName = searchParams.get('day')
+  const previousWeek = searchParams.get('previousWeek')
+
+  // If requesting previous week's data
+  if (previousWeek === 'true' && dateStr && dayName) {
+    const log = await workoutLogDb.findPreviousWeekLog(Number(userId), dayName, dateStr)
+    return NextResponse.json(log)
+  }
 
   const logs = await workoutLogDb.findMany(Number(userId), dayName || undefined)
   return NextResponse.json(logs)
