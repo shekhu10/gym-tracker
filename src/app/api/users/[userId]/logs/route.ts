@@ -52,12 +52,31 @@ export async function GET(req: NextRequest, {params}: any) {
 // POST /api/users/:userId/logs
 // Body: { dayKey: 'mon', entries: [...], date?: 'YYYY-MM-DD' }
 export async function POST(req: NextRequest, {params}: any) {
-  const { userId } = params
+  const { userId } = await params
+  console.log('POST /api/users/[userId]/logs - userId:', userId)
+  
   const body = await req.json()
-  const { dayKey, entries, date } = body as { dayKey: DayKey; entries: unknown; date?: string }
+  console.log('Request body:', JSON.stringify(body, null, 2))
+  
+  const { dayKey, exercises, date, workoutDay, startTime, endTime, notes } = body as { 
+    dayKey: DayKey; 
+    exercises: unknown; 
+    date?: string;
+    workoutDay?: string;
+    startTime?: string;
+    endTime?: string;
+    notes?: string;
+  }
+  console.log('Parsed - dayKey:', dayKey, 'exercises:', !!exercises, 'date:', date)
 
-  if (!dayKey || !(dayKey in dayToColumn)) return badDay(dayKey as string)
-  if (!entries) return NextResponse.json({ error: 'entries missing' }, { status: 400 })
+  if (!dayKey || !(dayKey in dayToColumn)) {
+    console.log('Invalid dayKey:', dayKey, 'Valid keys:', Object.keys(dayToColumn))
+    return badDay(dayKey as string)
+  }
+  if (!exercises) {
+    console.log('Missing exercises in request body')
+    return NextResponse.json({ error: 'exercises missing' }, { status: 400 })
+  }
 
   const col = dayToColumn[dayKey]
   const user = await prisma.user.findUnique({ where: { id: Number(userId) }, select: { [col]: true } })
@@ -80,8 +99,13 @@ export async function POST(req: NextRequest, {params}: any) {
       userId: Number(userId),
       date: logDate,
       dayName: currentDayName(logDate),
-      planName: plan.workoutDay ?? '',
-      entries,
+      planName: workoutDay || plan.workoutDay || '',
+      entries: {
+        exercises,
+        startTime,
+        endTime,
+        notes,
+      },
     },
   })
   return NextResponse.json(log, { status: 201 })

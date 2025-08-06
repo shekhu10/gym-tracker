@@ -7,7 +7,7 @@ export async function GET(
     _req: NextRequest,
     {params}: any
 ) {
-  const { userId, logId } = params
+  const { userId, logId } = await params
   const log = await prisma.workoutLog.findFirst({
     where: {
       id: Number(logId),
@@ -24,7 +24,7 @@ export async function PUT(
     req: NextRequest,
     {params}: any
 ) {
-  const { userId, logId } = params
+  const { userId, logId } = await params
   const body = await req.json()
   const { entries } = body as { entries: unknown }
   if (!entries) {
@@ -44,7 +44,7 @@ export async function DELETE(
     _req: NextRequest,
      { params }: any
 ) {
-  const { userId, logId } = params
+  const { userId, logId } = await params
   await prisma.workoutLog.delete({
     where: {
       id: Number(logId),

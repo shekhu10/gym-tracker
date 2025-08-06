@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // GET /api/users/:userId - fetch single user
 export async function GET(_req: NextRequest, { params }: { params: { userId: string } }) {
-  const { userId } = params
+  const { userId } = await params
   const user = await prisma.user.findUnique({ where: { id: Number(userId) } })
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
   return NextResponse.json(user)
@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest, { params }: { params: { userId: str
 
 // PUT /api/users/:userId - update name/email
 export async function PUT(req: NextRequest, { params }: { params: { userId: string } }) {
-  const { userId } = params
+  const { userId } = await params
   const body = await req.json()
   const { name, email } = body as { name?: string; email?: string }
   if (!name && !email) {
@@ -31,7 +31,7 @@ export async function PUT(req: NextRequest, { params }: { params: { userId: stri
 
 // DELETE /api/users/:userId - remove user and cascade logs
 export async function DELETE(_req: NextRequest, { params }: { params: { userId: string } }) {
-  const { userId } = params
+  const { userId } = await params
   try {
     await prisma.user.delete({ where: { id: Number(userId) } })
     return NextResponse.json({ success: true })

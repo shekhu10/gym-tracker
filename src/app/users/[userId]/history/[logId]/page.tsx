@@ -21,7 +21,7 @@ interface WorkoutLog {
 export default function LogDetailPage() {
   const params = useParams<{ userId: string; logId: string }>()
   const router = useRouter()
-  const { userId, logId } = params
+  const { userId, logId } = await params
   const [log, setLog] = useState<WorkoutLog | null>(null)
   const [error, setError] = useState('')
 
