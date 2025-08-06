@@ -44,7 +44,12 @@ export const userDb = {
       FROM "User"
       WHERE id = ${userId}
     `
-    return result[0] || null
+    const user = result[0] || null
+    if (user && user.plan) {
+      // Parse JSON plan if it's a string
+      user.plan = typeof user.plan === 'string' ? JSON.parse(user.plan) : user.plan
+    }
+    return user
   },
 
   // Update day plan for user
@@ -121,23 +126,30 @@ export const userDb = {
 export const workoutLogDb = {
   // Get workout logs for user
   async findMany(userId: number, dayName?: string) {
+    let results
     if (dayName) {
-      return await sql`
+      results = await sql`
         SELECT id, "userId", date, "dayName", 
                "planName", entries, "createdAt"
         FROM "WorkoutLog"
         WHERE "userId" = ${userId} AND "dayName" = ${dayName}
         ORDER BY date DESC
       `
+    } else {
+      results = await sql`
+        SELECT id, "userId", date, "dayName", 
+               "planName", entries, "createdAt"
+        FROM "WorkoutLog"
+        WHERE "userId" = ${userId}
+        ORDER BY date DESC
+      `
     }
     
-    return await sql`
-      SELECT id, "userId", date, "dayName", 
-             "planName", entries, "createdAt"
-      FROM "WorkoutLog"
-      WHERE "userId" = ${userId}
-      ORDER BY date DESC
-    `
+    // Parse JSON entries if they are strings
+    return results.map(log => ({
+      ...log,
+      entries: typeof log.entries === 'string' ? JSON.parse(log.entries) : log.entries
+    }))
   },
 
   // Get single workout log
@@ -148,18 +160,28 @@ export const workoutLogDb = {
       FROM "WorkoutLog"
       WHERE id = ${id}
     `
-    return result[0] || null
+    const log = result[0] || null
+    if (log) {
+      // Parse JSON entries if they are strings
+      log.entries = typeof log.entries === 'string' ? JSON.parse(log.entries) : log.entries
+    }
+    return log
   },
 
   // Create new workout log
-  async create(userId: number, dayName: string, planName: string, entries: any) {
+  async create(userId: number, dayName: string, planName: string, entries: any, logDate?: Date) {
     const result = await sql`
-      INSERT INTO "WorkoutLog" ("userId", "dayName", "planName", entries)
-      VALUES (${userId}, ${dayName}, ${planName}, ${JSON.stringify(entries)})
+      INSERT INTO "WorkoutLog" ("userId", "dayName", "planName", entries, date)
+      VALUES (${userId}, ${dayName}, ${planName}, ${JSON.stringify(entries)}, ${logDate || new Date()})
       RETURNING id, "userId", date, "dayName", 
                 "planName", entries, "createdAt"
     `
-    return result[0]
+    const log = result[0]
+    if (log) {
+      // Parse JSON entries if they are strings
+      log.entries = typeof log.entries === 'string' ? JSON.parse(log.entries) : log.entries
+    }
+    return log
   },
 
   // Update workout log
@@ -191,7 +213,12 @@ export const workoutLogDb = {
       RETURNING id, "userId", date, "dayName", 
                 "planName", entries, "createdAt"
     `
-    return result[0] || null
+    const log = result[0] || null
+    if (log) {
+      // Parse JSON entries if they are strings
+      log.entries = typeof log.entries === 'string' ? JSON.parse(log.entries) : log.entries
+    }
+    return log
   },
 
   // Delete workout log

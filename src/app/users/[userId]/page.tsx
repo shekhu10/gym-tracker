@@ -9,12 +9,14 @@ interface Props {
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: Props) {
-  const user = await userDb.findUnique(Number(params.userId))
+  const { userId } = await params
+  const user = await userDb.findUnique(Number(userId))
   return { title: user ? `${user.name} – User` : 'User not found' }
 }
 
 export default async function UserDetailPage({ params }: Props) {
-  const user = await userDb.findUnique(Number(params.userId))
+  const { userId } = await params
+  const user = await userDb.findUnique(Number(userId))
   if (!user) notFound()
 
   return (
