@@ -298,7 +298,7 @@ function SingleExerciseLogEditor({ exercise, planExercise, previousWeekExercise,
           <SetLogEditor
             key={index}
             set={set}
-            planSet={planExercise?.type === "single" ? planExercise.sets[index] : undefined}
+            planSet={planExercise && 'sets' in planExercise ? planExercise.sets[index] : undefined}
             previousWeekSet={previousWeekExercise?.sets?.[index]}
             onChange={(updated) => updateSet(index, updated)}
             onRemove={() => removeSet(index)}
