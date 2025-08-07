@@ -210,12 +210,10 @@ export default function WorkoutLogPage() {
             plan={plan}
             previousWeekLog={previousWeekLog}
             onChange={setCurrentLog}
+            onSave={saveLog}
           />
           
           <div className="flex gap-2 mt-6 items-center">
-            <Button variant="primary" onClick={saveLog} disabled={loading}>
-              {loading ? "Saving..." : "Save Workout Log"}
-            </Button>
             <Button variant="secondary" onClick={clearLog}>
               Clear Log
             </Button>

@@ -57,9 +57,11 @@ interface WorkoutLogFormProps {
   plan?: Plan; // Template plan for reference
   previousWeekLog?: any; // Previous week's log data for comparison
   onChange: (log: WorkoutLog) => void;
+  onSave: () => void; // Callback to save the log when finished
 }
 
-export function WorkoutLogForm({ log, plan, previousWeekLog, onChange }: WorkoutLogFormProps) {
+export function WorkoutLogForm({ log, plan, previousWeekLog, onChange, onSave }: WorkoutLogFormProps) {
+  const [currentExerciseIdx, setCurrentExerciseIdx] = useState(0);
   const updateLog = (updates: Partial<WorkoutLog>) => {
     onChange({ ...log, ...updates });
   };
@@ -69,6 +71,8 @@ export function WorkoutLogForm({ log, plan, previousWeekLog, onChange }: Workout
     newExercises[index] = exercise;
     updateLog({ exercises: newExercises });
   };
+
+  const isLastExercise = currentExerciseIdx === log.exercises.length - 1;
 
   return (
     <div className="space-y-6">
@@ -90,16 +94,45 @@ export function WorkoutLogForm({ log, plan, previousWeekLog, onChange }: Workout
 
       {/* Exercises */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-white">Exercises</h3>
-        {log.exercises.map((exercise, index) => (
+        <h3 className="text-lg font-semibold text-white">Exercise {currentExerciseIdx + 1} of {log.exercises.length}</h3>
+        {log.exercises.length > 0 ? (
           <ExerciseLogEditor
-            key={index}
-            exercise={exercise}
-            planExercise={plan?.exercises[index]}
-            previousWeekExercise={previousWeekLog?.entries?.exercises?.[index]}
-            onChange={(updatedExercise) => updateExercise(index, updatedExercise)}
+            key={currentExerciseIdx}
+            exercise={log.exercises[currentExerciseIdx]}
+            planExercise={plan?.exercises[currentExerciseIdx]}
+            previousWeekExercise={previousWeekLog?.entries?.exercises?.[currentExerciseIdx]}
+            onChange={(updatedExercise) => updateExercise(currentExerciseIdx, updatedExercise)}
           />
-        ))}
+        ) : (
+          <p className="text-gray-400">No exercises in this workout.</p>
+        )}
+
+        {/* Navigation Buttons */}
+        {log.exercises.length > 0 && (
+          <div className="flex gap-3 mt-4">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setCurrentExerciseIdx((idx) => Math.max(0, idx - 1))}
+              disabled={currentExerciseIdx === 0}
+            >
+              Prev
+            </Button>
+            {!isLastExercise ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setCurrentExerciseIdx((idx) => Math.min(log.exercises.length - 1, idx + 1))}
+              >
+                Next
+              </Button>
+            ) : (
+              <Button variant="primary" size="sm" onClick={onSave}>
+                Save Log
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
