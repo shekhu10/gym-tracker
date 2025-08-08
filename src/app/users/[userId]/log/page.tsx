@@ -78,12 +78,14 @@ export default function WorkoutLogPage() {
                       const stripSet = set as unknown as StripSet;
                       return {
                         ...stripSet,
-                        actualSets: stripSet.stripSets.map((s: any) => ({ ...s, completed: false })),
+                        actualSets: stripSet.stripSets.map((s: any) => ({ ...s, reps: 0, weight: 0, completed: false })),
                         completed: false,
                       };
                     } else {
                       return {
                         ...set,
+                        reps: 0,
+                        weight: 0,
                         completed: false,
                       };
                     }
@@ -103,12 +105,14 @@ export default function WorkoutLogPage() {
                     const stripSet = set as unknown as StripSet;
                     return {
                       ...stripSet,
-                      actualSets: stripSet.stripSets.map((s: any) => ({ ...s, completed: false })),
+                      actualSets: stripSet.stripSets.map((s: any) => ({ ...s, reps: 0, weight: 0, completed: false })),
                       completed: false,
                     };
                   } else {
                     return {
                       ...set,
+                      reps: 0,
+                      weight: 0,
                       completed: false,
                     };
                   }
