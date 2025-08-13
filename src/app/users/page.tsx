@@ -6,8 +6,8 @@ export const metadata = {
 
 export default function UsersPage() {
   return (
-    <main className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-4">Users</h1>
+    <main className="p-4 sm:p-6 max-w-3xl mx-auto">
+      <h1 className="text-xl sm:text-2xl font-semibold mb-4">Users</h1>
       <UsersTable />
     </main>
   )

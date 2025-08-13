@@ -76,8 +76,8 @@ export function WorkoutLogForm({ log, plan, previousWeekLog, onChange, onSave }:
 
   const isLastExercise = currentExerciseIdx === log.exercises.length - 1;
   
-  // Calculate progress
-  const completedExercises = log.exercises.filter(ex => ex.completed).length;
+  // Calculate progress based on current exercise position (not manual completion)
+  const completedExercises = currentExerciseIdx; // Progress is based on current position
   const progressPercentage = log.exercises.length > 0 ? (completedExercises / log.exercises.length) * 100 : 0;
 
   return (
@@ -103,7 +103,7 @@ export function WorkoutLogForm({ log, plan, previousWeekLog, onChange, onSave }:
           >
             {log.exercises.map((exercise, index) => (
               <option key={index} value={index} className="bg-gray-800 text-white">
-                {index + 1}. {exercise.name} {exercise.completed ? '✓' : ''}
+                {index + 1}. {exercise.name}
               </option>
             ))}
           </select>
@@ -184,25 +184,11 @@ function ExerciseLogEditor({ exercise, planExercise, previousWeekExercise, onCha
     onChange({ ...exercise, ...updates });
   };
 
-  const toggleCompleted = () => {
-    updateExercise({ completed: !exercise.completed });
-  };
-
   if (exercise.type === "circuit") {
     return (
       <div className="border border-blue-400 rounded-lg p-4 bg-black shadow-sm">
         <div className="mb-3 flex justify-between items-center">
           <h4 className="font-semibold text-blue-300">Circuit: {exercise.name}</h4>
-          <button
-            onClick={toggleCompleted}
-            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-              exercise.completed
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-            }`}
-          >
-            {exercise.completed ? '✓ Completed' : 'Mark Complete'}
-          </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3 text-sm">
@@ -327,18 +313,6 @@ function SingleExerciseLogEditor({ exercise, planExercise, previousWeekExercise,
     <div className={`border rounded-lg p-4 ${bgColor} ${borderColor}`}>
       <div className="mb-3 flex justify-between items-center">
         <h4 className="font-semibold text-white">{exercise.name}</h4>
-        {!isInCircuit && (
-          <button
-            onClick={() => updateExercise({ completed: !exercise.completed })}
-            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-              exercise.completed
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-            }`}
-          >
-            {exercise.completed ? '✓ Completed' : 'Mark Complete'}
-          </button>
-        )}
       </div>
 
       {!isInCircuit && (

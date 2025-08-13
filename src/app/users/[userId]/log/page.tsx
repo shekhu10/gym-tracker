@@ -299,12 +299,6 @@ export default function WorkoutLogPage() {
     }
   };
 
-  const clearLog = () => {
-    if (!confirm("Clear current workout log?")) return;
-    setCurrentLog({ ...emptyLog, date: currentLog.date });
-    setMessage(null);
-  };
-
   return (
     <div className="container-page pb-20">
       <h1 className="text-2xl font-bold mb-4">Workout Log</h1>
@@ -351,9 +345,6 @@ export default function WorkoutLogPage() {
           />
           
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 mt-6 items-center">
-            <Button variant="secondary" onClick={clearLog} className="w-full sm:w-auto">
-              Clear Log
-            </Button>
             {message && (
               <span className={`text-sm text-center sm:text-left ${
                 message.includes("Error") ? "text-red-600" : "text-green-600"

@@ -118,7 +118,7 @@ export default function UsersTable() {
   return (
     <div className="space-y-6">
       {/* Create user form */}
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <input
           type="text"
           placeholder="Name"
@@ -138,79 +138,81 @@ export default function UsersTable() {
         </button>
       </div>
 
-      {/* Users table */}
+      {/* Users display - consistent card layout for all screen sizes */}
       {loading ? (
         <p>Loading...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
-        <table className="table w-full">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th className="w-32">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id} className="border-t">
-                <td>{u.id}</td>
-                <td>
-                  {editingId === u.id ? (
-                    <input
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className="input input-sm w-full"
-                    />
-                  ) : (
-                    <Link href={`/users/${u.id}`} className="link link-primary">{u.name}</Link>
-                  )}
-                </td>
-                <td>
-                  {editingId === u.id ? (
-                    <input
-                      value={editEmail}
-                      onChange={(e) => setEditEmail(e.target.value)}
-                      className="input input-sm w-full"
-                    />
-                  ) : (
-                    u.email
-                  )}
-                </td>
-                <td className="flex gap-2">
+        <div className="space-y-4">
+          {users.map((u) => (
+            <div key={u.id} className="bg-gray-800 border border-gray-600 rounded-lg p-4 shadow-sm">
+              <div className="space-y-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="text-sm text-gray-300">ID: {u.id}</div>
+                    <div className="font-medium text-white">
+                      {editingId === u.id ? (
+                        <input
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="input input-sm w-full bg-gray-700 border-gray-600 text-white"
+                          placeholder="Name"
+                        />
+                      ) : (
+                        <Link href={`/users/${u.id}`} className="link link-primary text-blue-400">{u.name}</Link>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="text-sm text-gray-300">Email:</div>
+                  <div>
+                    {editingId === u.id ? (
+                      <input
+                        value={editEmail}
+                        onChange={(e) => setEditEmail(e.target.value)}
+                        className="input input-sm w-full bg-gray-700 border-gray-600 text-white"
+                        placeholder="Email"
+                      />
+                    ) : (
+                      <span className="text-sm text-gray-200">{u.email}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
                   {editingId === u.id ? (
                     <>
-                      <button className="btn btn-sm btn-success" onClick={() => handleUpdate(u.id)}>
+                      <button className="btn btn-sm btn-success flex-1" onClick={() => handleUpdate(u.id)}>
                         Save
                       </button>
-                      <button className="btn btn-sm" onClick={cancelEdit}>
+                      <button className="btn btn-sm flex-1" onClick={() => cancelEdit}>
                         Cancel
                       </button>
                     </>
                   ) : (
                     <>
-                      <button className="btn btn-sm" onClick={() => startEdit(u)}>
+                      <button className="btn btn-sm flex-1" onClick={() => startEdit(u)}>
                         Edit
                       </button>
-                      <button className="btn btn-sm btn-error" onClick={() => handleDelete(u.id)}>
+                      <button className="btn btn-sm btn-error flex-1" onClick={() => handleDelete(u.id)}>
                         Delete
                       </button>
                     </>
                   )}
-                </td>
-              </tr>
-            ))}
-            {users.length === 0 && (
-              <tr>
-                <td colSpan={4} className="text-center py-4">
-                  No users
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {users.length === 0 && (
+            <div className="text-center py-8 text-gray-400">
+              No users
+            </div>
+          )}
+        </div>
       )}
     </div>
   )

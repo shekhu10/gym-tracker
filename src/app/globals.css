@@ -57,4 +57,20 @@ body {
     background-size: 16px;
     padding-right: 40px;
   }
+  
+  /* Mobile-specific improvements for users page */
+  .btn-sm {
+    min-height: 36px;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  /* Better card spacing on mobile */
+  .space-y-3 > * + * {
+    margin-top: 0.75rem;
+  }
+  
+  /* Improve mobile table responsiveness */
+  .table {
+    font-size: 0.875rem;
+  }
 }
