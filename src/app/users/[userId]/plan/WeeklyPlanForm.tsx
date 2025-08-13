@@ -54,15 +54,16 @@ export function WeeklyPlanForm({
 
   return (
     <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium mb-1">
+      <div className="bg-black border border-gray-600 p-4 rounded-lg shadow-sm">
+        <label className="block text-sm font-medium mb-1 text-white">
           Workout Day Name
         </label>
         <input
           type="text"
           value={plan.workoutDay}
           onChange={(e) => update({ workoutDay: e.target.value })}
-          className="w-full border rounded p-2"
+          className="w-full border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          placeholder="Enter workout day name"
         />
       </div>
       <ExerciseList
@@ -104,15 +105,15 @@ function ExerciseList({
 
   return (
     <div>
-      <h2 className="font-semibold mb-2">Exercises</h2>
+      <h2 className="font-semibold mb-2 text-white">Exercises</h2>
       {exercises.map((ex, idx) => (
-        <div key={idx} className="border rounded p-3 mb-3">
-          <div className="flex justify-between items-center mb-2">
-            <span className="font-medium">Exercise {idx + 1}</span>
+        <div key={idx} className="border border-gray-600 rounded p-4 mb-4 bg-black shadow-sm">
+          <div className="flex justify-between items-center mb-3">
+            <span className="font-medium text-white">Exercise {idx + 1}</span>
             <Button
               variant="secondary"
               size="sm"
-              className="text-red-600"
+              className="text-red-600 hover:bg-red-700"
               onClick={() => removeExercise(idx)}
             >
               Remove
@@ -124,7 +125,7 @@ function ExerciseList({
           />
         </div>
       ))}
-      <Button variant="primary" size="sm" onClick={addExercise}>
+      <Button variant="primary" size="sm" onClick={addExercise} className="w-full sm:w-auto">
         + Add Exercise
       </Button>
     </div>
@@ -146,7 +147,7 @@ function ExerciseForm({
   return (
     <div className="space-y-3">
       <div className="flex gap-2 items-center">
-        <label className="text-sm">Type</label>
+        <label className="text-sm text-gray-300">Type</label>
         <select
           value={exercise.type}
           onChange={(e) => {
@@ -171,20 +172,21 @@ function ExerciseForm({
               } as CircuitExercise);
             }
           }}
-          className="border rounded p-1"
+          className="border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
-          <option value="single">Single</option>
-          <option value="circuit">Circuit</option>
+          <option value="single" className="bg-gray-800 text-white">Single</option>
+          <option value="circuit" className="bg-gray-800 text-white">Circuit</option>
         </select>
       </div>
 
       <div>
-        <label className="block text-sm mb-1">Name</label>
+        <label className="block text-sm mb-1 text-gray-300">Name</label>
         <input
           type="text"
           value={exercise.name}
           onChange={(e) => update({ name: e.target.value })}
-          className="w-full border rounded p-1"
+          className="w-full border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          placeholder="Enter exercise name"
         />
       </div>
 
@@ -221,30 +223,36 @@ function SingleFields({
   }
 
   return (
-    <div className="space-y-2 border-t pt-2">
-      <div className="grid grid-cols-2 gap-2">
-        <label className="text-sm">Rest Between Sets (sec)</label>
-        <input
-          type="number"
-          value={ex.restBetweenSets}
-          onChange={(e) => update({ restBetweenSets: Number(e.target.value) })}
-          className="border rounded p-1"
-        />
-        <label className="text-sm">Rest After Exercise (sec)</label>
-        <input
-          type="number"
-          value={ex.restAfterExercise}
-          onChange={(e) =>
-            update({ restAfterExercise: Number(e.target.value) })
-          }
-          className="border rounded p-1"
-        />
+    <div className="space-y-2 border-t border-gray-600 pt-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm text-gray-300 mb-1">Rest Between Sets (sec)</label>
+          <input
+            type="number"
+            value={ex.restBetweenSets}
+            onChange={(e) => update({ restBetweenSets: Number(e.target.value) })}
+            className="w-full border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            placeholder="0"
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-300 mb-1">Rest After Exercise (sec)</label>
+          <input
+            type="number"
+            value={ex.restAfterExercise}
+            onChange={(e) =>
+              update({ restAfterExercise: Number(e.target.value) })
+            }
+            className="w-full border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            placeholder="0"
+          />
+        </div>
       </div>
 
       <div>
-        <p className="font-medium">Sets</p>
+        <p className="font-medium text-white mb-3">Sets</p>
         {ex.sets.map((s, idx) => (
-          <div key={idx} className="border p-2 mb-2 rounded">
+          <div key={idx} className="border border-gray-600 p-3 mb-3 rounded bg-gray-900 shadow-sm">
             {"type" in s && s.type === "strip" ? (
               <StripSetEditor
                 strip={s}
@@ -260,12 +268,12 @@ function SingleFields({
             )}
           </div>
         ))}
-        <div className="flex gap-2 mt-1">
+        <div className="flex gap-2 mt-3">
           <Button size="sm" variant="primary" onClick={addNormalSet}>
-            + Normal
+            + Normal Set
           </Button>
           <Button size="sm" variant="secondary" onClick={addStripSet}>
-            + Strip
+            + Strip Set
           </Button>
         </div>
       </div>
@@ -283,37 +291,42 @@ function NormalSetEditor({
   onRemove: () => void;
 }) {
   return (
-    <div className="flex gap-2 items-end">
-      <input
-        type="number"
-        placeholder="Reps"
-        value={set.reps}
-        onChange={(e) => onChange({ ...set, reps: Number(e.target.value) })}
-        className="w-20 border rounded p-1"
-      />
-      <input
-        type="number"
-        placeholder="Weight"
-        value={set.weight}
-        onChange={(e) => onChange({ ...set, weight: Number(e.target.value) })}
-        className="w-24 border rounded p-1"
-      />
-      <select
-        value={set.type}
-        onChange={(e) => onChange({ ...set, type: e.target.value as any })}
-        className="border rounded p-1"
-      >
-        <option value="warmup">Warmup</option>
-        <option value="normal">Normal</option>
-      </select>
-      <Button
-        size="sm"
-        variant="secondary"
-        className="text-red-600"
-        onClick={onRemove}
-      >
-        X
-      </Button>
+    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          placeholder="Reps"
+          value={set.reps}
+          onChange={(e) => onChange({ ...set, reps: Number(e.target.value) })}
+          className="w-20 border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        />
+        <span className="text-gray-300">×</span>
+        <input
+          type="number"
+          placeholder="Weight"
+          value={set.weight}
+          onChange={(e) => onChange({ ...set, weight: Number(e.target.value) })}
+          className="w-24 border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <select
+          value={set.type}
+          onChange={(e) => onChange({ ...set, type: e.target.value as any })}
+          className="border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        >
+          <option value="warmup" className="bg-gray-800 text-white">Warmup</option>
+          <option value="normal" className="bg-gray-800 text-white">Normal</option>
+        </select>
+        <Button
+          size="sm"
+          variant="secondary"
+          className="text-red-600 hover:bg-red-700"
+          onClick={onRemove}
+        >
+          Remove
+        </Button>
+      </div>
     </div>
   );
 }
@@ -346,48 +359,53 @@ function StripSetEditor({
   }
   return (
     <div>
-      <p className="text-sm font-medium mb-1">Strip Sets</p>
+      <p className="text-sm font-medium mb-3 text-white">Strip Sets</p>
       {strip.stripSets.map((ss, idx) => (
-        <div key={idx} className="flex gap-2 items-end mb-1">
-          <input
-            type="number"
-            placeholder="Reps"
-            value={ss.reps}
-            onChange={(e) =>
-              updateStrip(idx, { ...ss, reps: Number(e.target.value) })
-            }
-            className="w-20 border rounded p-1"
-          />
-          <input
-            type="number"
-            placeholder="Weight"
-            value={ss.weight}
-            onChange={(e) =>
-              updateStrip(idx, { ...ss, weight: Number(e.target.value) })
-            }
-            className="w-24 border rounded p-1"
-          />
+        <div key={idx} className="flex flex-col sm:flex-row gap-3 items-start sm:items-end mb-3 p-3 border border-gray-600 rounded bg-gray-800">
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              placeholder="Reps"
+              value={ss.reps}
+              onChange={(e) =>
+                updateStrip(idx, { ...ss, reps: Number(e.target.value) })
+              }
+              className="w-20 border border-gray-600 rounded p-2 bg-gray-700 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <span className="text-gray-300">×</span>
+            <input
+              type="number"
+              placeholder="Weight"
+              value={ss.weight}
+              onChange={(e) =>
+                updateStrip(idx, { ...ss, weight: Number(e.target.value) })
+              }
+              className="w-24 border border-gray-600 rounded p-2 bg-gray-700 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
           <Button
             size="sm"
             variant="secondary"
-            className="text-red-600"
+            className="text-red-600 hover:bg-red-700"
             onClick={() => removeStrip(idx)}
           >
-            remove
+            Remove
           </Button>
         </div>
       ))}
-      <Button size="sm" variant="primary" onClick={addStrip}>
-        + add strip
-      </Button>
-      <Button
-        size="sm"
-        variant="secondary"
-        className="text-red-600 ml-2"
-        onClick={onRemove}
-      >
-        delete group
-      </Button>
+      <div className="flex gap-2 mt-3">
+        <Button size="sm" variant="primary" onClick={addStrip}>
+          + Add Strip
+        </Button>
+        <Button
+          size="sm"
+          variant="secondary"
+          className="text-red-600 hover:bg-red-700"
+          onClick={onRemove}
+        >
+          Delete Group
+        </Button>
+      </div>
     </div>
   );
 }
@@ -416,49 +434,61 @@ function CircuitFields({
   }
 
   return (
-    <div className="space-y-2 border-t pt-2">
-      <div className="grid grid-cols-2 gap-2">
-        <label className="text-sm">Rounds</label>
-        <input
-          type="number"
-          value={ex.rounds}
-          onChange={(e) => update({ rounds: Number(e.target.value) })}
-          className="border rounded p-1"
-        />
-        <label className="text-sm">Rest Between Exercises (sec)</label>
-        <input
-          type="number"
-          value={ex.restBetweenExercises}
-          onChange={(e) =>
-            update({ restBetweenExercises: Number(e.target.value) })
-          }
-          className="border rounded p-1"
-        />
-        <label className="text-sm">Rest Between Rounds (sec)</label>
-        <input
-          type="number"
-          value={ex.restBetweenRounds}
-          onChange={(e) =>
-            update({ restBetweenRounds: Number(e.target.value) })
-          }
-          className="border rounded p-1"
-        />
-        <label className="text-sm">Rest After Exercise (sec)</label>
-        <input
-          type="number"
-          value={ex.restAfterExercise}
-          onChange={(e) =>
-            update({ restAfterExercise: Number(e.target.value) })
-          }
-          className="border rounded p-1"
-        />
+    <div className="space-y-2 border-t border-gray-600 pt-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm text-gray-300 mb-1">Rounds</label>
+          <input
+            type="number"
+            value={ex.rounds}
+            onChange={(e) => update({ rounds: Number(e.target.value) })}
+            className="w-full border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            placeholder="0"
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-300 mb-1">Rest Between Exercises (sec)</label>
+          <input
+            type="number"
+            value={ex.restBetweenExercises}
+            onChange={(e) =>
+              update({ restBetweenExercises: Number(e.target.value) })
+            }
+            className="w-full border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            placeholder="0"
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-300 mb-1">Rest Between Rounds (sec)</label>
+          <input
+            type="number"
+            value={ex.restBetweenRounds}
+            onChange={(e) =>
+              update({ restBetweenRounds: Number(e.target.value) })
+            }
+            className="w-full border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            placeholder="0"
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-300 mb-1">Rest After Exercise (sec)</label>
+          <input
+            type="number"
+            value={ex.restAfterExercise}
+            onChange={(e) =>
+              update({ restAfterExercise: Number(e.target.value) })
+            }
+            className="w-full border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            placeholder="0"
+          />
+        </div>
       </div>
 
       <div>
-        <p className="font-medium">Circuit Exercises</p>
+        <p className="font-medium text-white mb-3">Circuit Exercises</p>
         {ex.exercises.map((ce, idx) => (
-          <div key={idx} className="border p-2 mb-2 rounded">
-            <div className="flex gap-2 items-center mb-1">
+          <div key={idx} className="border border-gray-600 p-4 mb-4 rounded bg-gray-900 shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-3">
               <input
                 type="text"
                 placeholder="Exercise name"
@@ -466,15 +496,15 @@ function CircuitFields({
                 onChange={(e) =>
                   updateNestedExercise(idx, { ...ce, name: e.target.value })
                 }
-                className="flex-1 border rounded p-1"
+                className="flex-1 border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
               <Button
                 size="sm"
                 variant="secondary"
-                className="text-red-600"
+                className="text-red-600 hover:bg-red-700"
                 onClick={() => removeNested(idx)}
               >
-                remove
+                Remove
               </Button>
             </div>
             {/* Nested sets (use NormalSetEditor) */}
@@ -504,12 +534,13 @@ function CircuitFields({
                   sets: [...ce.sets, { reps: "", weight: "", type: "normal" }],
                 })
               }
+              className="mt-2"
             >
-              + add set
+              + Add Set
             </Button>
           </div>
         ))}
-        <Button size="sm" variant="primary" onClick={addNestedExercise}>
+        <Button size="sm" variant="primary" onClick={addNestedExercise} className="w-full sm:w-auto">
           + Add Circuit Exercise
         </Button>
       </div>

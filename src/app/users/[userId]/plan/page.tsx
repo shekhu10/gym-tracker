@@ -4,13 +4,24 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { WeeklyPlanForm, Plan } from "./WeeklyPlanForm";
 
-const dayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+const dayKeys: DayKey[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const dayLabels: Record<DayKey, string> = {
+  mon: "Monday",
+  tue: "Tuesday",
+  wed: "Wednesday",
+  thu: "Thursday",
+  fri: "Friday",
+  sat: "Saturday",
+  sun: "Sunday",
+};
+
 const emptyPlan: Plan = { workoutDay: "", exercises: [] };
 
 export default function WeeklyPlanPage() {
   const { userId } = useParams<{ userId: string }>();
   const [plans, setPlans] = useState<Record<string, Plan | null>>({});
-  const [selected, setSelected] = useState<(typeof dayKeys)[number]>("mon");
+  const [selected, setSelected] = useState<DayKey>("mon");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -58,37 +69,62 @@ export default function WeeklyPlanPage() {
   return (
     <div className="container-page pb-20">
       <h1 className="text-2xl font-bold mb-4">Weekly Plan</h1>
-      <div className="flex gap-2 mb-4">
-        {dayKeys.map((d) => (
-          <Button
-            key={d}
-            variant={selected === d ? "primary" : "secondary"}
-            size="sm"
-            onClick={() => setSelected(d)}
-          >
-            {d.toUpperCase()}
-          </Button>
-        ))}
+
+      {/* Day Selection */}
+      <div className="bg-black border border-gray-600 p-4 rounded-lg mb-6 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1 text-white">
+              Selected Day
+            </label>
+            <select
+              value={selected}
+              onChange={(e) => setSelected(e.target.value as DayKey)}
+              className="w-full border rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              {dayKeys.map((day) => (
+                <option key={day} value={day}>
+                  {dayLabels[day]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1 text-white">
+              Current Plan
+            </label>
+            <div className="w-full border rounded p-2 bg-gray-700 text-white">
+              {currentPlan.workoutDay || "No workout day specified"}
+            </div>
+          </div>
+        </div>
       </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <p className="text-white">Loading plan...</p>
       ) : (
         <>
           <WeeklyPlanForm plan={currentPlan} onChange={updateCurrent} />
-          <div className="flex gap-2 mt-4 items-center">
+          
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 mt-6 items-center">
             <Button variant="primary" onClick={saveCurrent}>
-              Save
+              Save Plan
             </Button>
             <Button
               variant="secondary"
-              className="bg-red-600 text-white"
+              className="bg-red-600 text-white hover:bg-red-700"
               onClick={clearCurrent}
             >
-              Clear
+              Clear Plan
             </Button>
             {message && (
-              <span className="text-green-600 ml-2 text-sm">{message}</span>
+              <span
+                className={`text-sm text-center sm:text-left ${
+                  message.includes("Error") ? "text-red-600" : "text-green-600"
+                }`}
+              >
+                {message}
+              </span>
             )}
           </div>
         </>
