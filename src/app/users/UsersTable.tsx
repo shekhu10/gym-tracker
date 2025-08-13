@@ -85,33 +85,38 @@ export default function UsersTable() {
       alert("Name and email cannot be empty");
       return;
     }
-    
+
     try {
-      console.log('Updating user:', id, { name: editName, email: editEmail });
-      
+      console.log("Updating user:", id, { name: editName, email: editEmail });
+
       const res = await fetch(`/api/users/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editName.trim(), email: editEmail.trim() }),
+        body: JSON.stringify({
+          name: editName.trim(),
+          email: editEmail.trim(),
+        }),
       });
-      
-      console.log('Response status:', res.status);
-      
+
+      console.log("Response status:", res.status);
+
       if (!res.ok) {
         const err = await res.json();
-        console.error('API Error:', err);
+        console.error("API Error:", err);
         alert(err.error || `Failed to update (Status: ${res.status})`);
         return;
       }
-      
+
       const updatedUser = await res.json();
-      console.log('User updated successfully:', updatedUser);
-      
+      console.log("User updated successfully:", updatedUser);
+
       cancelEdit();
       fetchUsers();
     } catch (err) {
-      console.error('Update error:', err);
-      alert(`Failed to update user: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      console.error("Update error:", err);
+      alert(
+        `Failed to update user: ${err instanceof Error ? err.message : "Unknown error"}`,
+      );
     }
   };
 

@@ -85,7 +85,10 @@ export default function WorkoutLogPage() {
                   restBetweenRounds: exercise.restBetweenRounds,
                   restAfterExercise: exercise.restAfterExercise,
                   exercises: exercise.exercises.map(
-                    (singleEx: any, singleExIndex: number): LogSingleExercise => {
+                    (
+                      singleEx: any,
+                      singleExIndex: number,
+                    ): LogSingleExercise => {
                       // Get last week's data for this single exercise
                       const lastWeekSingleEx =
                         previousWeekData?.entries?.exercises?.[exerciseIndex]
@@ -223,15 +226,15 @@ export default function WorkoutLogPage() {
                         sets.push({
                           type: "strip" as const,
                           stripSets: lastWeekSet.stripSets || [],
-                                                          actualSets: (
-                                  lastWeekSet.actualSets ||
-                                  lastWeekSet.stripSets ||
-                                  []
-                                ).map((s: any) => ({
-                                  reps: 0,
-                                  weight: 0,
-                                  completed: false,
-                                })),
+                          actualSets: (
+                            lastWeekSet.actualSets ||
+                            lastWeekSet.stripSets ||
+                            []
+                          ).map((s: any) => ({
+                            reps: 0,
+                            weight: 0,
+                            completed: false,
+                          })),
                           completed: false,
                           // Preserve last week's data for display
                           lastWeekData: lastWeekSet,
@@ -316,7 +319,7 @@ export default function WorkoutLogPage() {
                         actualSet.weight &&
                         actualSet.weight > 0,
                     );
-                    
+
                     if (hasValidSets) {
                       // Filter out individual sets within the strip set that are incomplete
                       set.actualSets = set.actualSets.filter(
@@ -327,7 +330,7 @@ export default function WorkoutLogPage() {
                           actualSet.weight > 0,
                       );
                     }
-                    
+
                     return hasValidSets;
                   } else {
                     // For regular sets, filter out if reps or weight is 0 or empty
@@ -353,7 +356,7 @@ export default function WorkoutLogPage() {
                       actualSet.weight &&
                       actualSet.weight > 0,
                   );
-                  
+
                   if (hasValidSets) {
                     // Filter out individual sets within the strip set that are incomplete
                     set.actualSets = set.actualSets.filter(
@@ -364,7 +367,7 @@ export default function WorkoutLogPage() {
                         actualSet.weight > 0,
                     );
                   }
-                  
+
                   return hasValidSets;
                 } else {
                   // For regular sets, filter out if reps or weight is 0 or empty
@@ -380,7 +383,7 @@ export default function WorkoutLogPage() {
       };
 
       console.log("Saving filtered log:", JSON.stringify(filteredLog, null, 2));
-      
+
       const res = await fetch(`/api/users/${userId}/logs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -179,7 +179,9 @@ export function WorkoutLogForm({
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => setCurrentExerciseIdx((idx) => Math.max(0, idx - 1))}
+              onClick={() =>
+                setCurrentExerciseIdx((idx) => Math.max(0, idx - 1))
+              }
               disabled={currentExerciseIdx === 0}
               className="w-full sm:w-auto"
             >
@@ -189,13 +191,22 @@ export function WorkoutLogForm({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setCurrentExerciseIdx((idx) => Math.min(log.exercises.length - 1, idx + 1))}
+                onClick={() =>
+                  setCurrentExerciseIdx((idx) =>
+                    Math.min(log.exercises.length - 1, idx + 1),
+                  )
+                }
                 className="w-full sm:w-auto"
               >
                 Next Exercise
               </Button>
             ) : (
-              <Button variant="primary" size="sm" onClick={onSave} className="w-full sm:w-auto">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={onSave}
+                className="w-full sm:w-auto"
+              >
                 Save Workout Log
               </Button>
             )}
@@ -317,9 +328,12 @@ function ExerciseLogEditor({
                     );
                   }, 0)}{" "}
                   sets
-                  {exercise.exercises.some((ex: any) => ex.sets.some((set: any) => set.type === "strip")) && (
+                  {exercise.exercises.some((ex: any) =>
+                    ex.sets.some((set: any) => set.type === "strip"),
+                  ) && (
                     <span className="text-xs text-gray-400">
-                      {" "}(including valid strip sets only)
+                      {" "}
+                      (including valid strip sets only)
                     </span>
                   )}
                 </span>
@@ -458,35 +472,36 @@ function SingleExerciseLogEditor({
               <span className="w-3 h-3 bg-orange-500 rounded-full"></span>
               <span className="text-gray-300">{exercise.sets.length}</span>
             </div>
-                          <div className="flex items-center gap-2">
-                <span className="w-3 h-3 bg-green-400 rounded-full"></span>
-                <span className="text-gray-300">
-                  Will save:{" "}
-                  {
-                    exercise.sets.filter((set) => {
-                      if (set.type === "strip") {
-                        return set.actualSets.some(
-                          (actualSet) =>
-                            actualSet.reps &&
-                            actualSet.reps > 0 &&
-                            actualSet.weight &&
-                            actualSet.weight > 0,
-                        );
-                      } else {
-                        return (
-                          set.reps && set.reps > 0 && set.weight && set.weight > 0
-                        );
-                      }
-                    }).length
-                  }{" "}
-                  sets
-                  {exercise.sets.some(set => set.type === "strip") && (
-                    <span className="text-xs text-gray-400">
-                      {" "}(including valid strip sets only)
-                    </span>
-                  )}
-                </span>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 bg-green-400 rounded-full"></span>
+              <span className="text-gray-300">
+                Will save:{" "}
+                {
+                  exercise.sets.filter((set) => {
+                    if (set.type === "strip") {
+                      return set.actualSets.some(
+                        (actualSet) =>
+                          actualSet.reps &&
+                          actualSet.reps > 0 &&
+                          actualSet.weight &&
+                          actualSet.weight > 0,
+                      );
+                    } else {
+                      return (
+                        set.reps && set.reps > 0 && set.weight && set.weight > 0
+                      );
+                    }
+                  }).length
+                }{" "}
+                sets
+                {exercise.sets.some((set) => set.type === "strip") && (
+                  <span className="text-xs text-gray-400">
+                    {" "}
+                    (including valid strip sets only)
+                  </span>
+                )}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -539,21 +554,26 @@ function SetLogEditor({
           <span className="font-medium text-orange-300">
             Set {setNumber} - Strip Set
           </span>
-                      <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400">
-                {set.actualSets.filter(s => s.reps && s.reps > 0 && s.weight && s.weight > 0).length} of {set.actualSets.length} strips valid
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={onRemove}
-                className="text-red-600"
-              >
-                Remove
-              </Button>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400">
+              {
+                set.actualSets.filter(
+                  (s) => s.reps && s.reps > 0 && s.weight && s.weight > 0,
+                ).length
+              }{" "}
+              of {set.actualSets.length} strips valid
+            </span>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onRemove}
+              className="text-red-600"
+            >
+              Remove
+            </Button>
+          </div>
         </div>
-        
+
         <div className="space-y-1">
           {set.actualSets.map((actualSet, index) => (
             <div
@@ -574,7 +594,10 @@ function SetLogEditor({
                     onChange({ ...set, actualSets: newActualSets });
                   }}
                   className={`w-16 border rounded px-1 ${
-                    actualSet.reps && actualSet.reps > 0 && actualSet.weight && actualSet.weight > 0
+                    actualSet.reps &&
+                    actualSet.reps > 0 &&
+                    actualSet.weight &&
+                    actualSet.weight > 0
                       ? "border-green-500 bg-gray-800 text-white"
                       : "border-gray-400 bg-gray-800 text-white"
                   }`}
@@ -593,34 +616,56 @@ function SetLogEditor({
                     onChange({ ...set, actualSets: newActualSets });
                   }}
                   className={`w-20 border rounded px-1 ${
-                    actualSet.reps && actualSet.reps > 0 && actualSet.weight && actualSet.weight > 0
+                    actualSet.reps &&
+                    actualSet.reps > 0 &&
+                    actualSet.weight &&
+                    actualSet.weight > 0
                       ? "border-green-500 bg-gray-800 text-white"
                       : "border-gray-600 bg-gray-800 text-white"
                   }`}
                   placeholder="Weight"
                 />
               </div>
-              
+
               {/* Show target values from plan */}
               {set.stripSets && set.stripSets[index] && (
                 <div className="text-xs text-gray-400">
-                  Target: {set.stripSets[index].reps}×{set.stripSets[index].weight}
+                  Target: {set.stripSets[index].reps}×
+                  {set.stripSets[index].weight}
                 </div>
               )}
 
               {/* Show last week data for strip sets if available */}
-              {(set.lastWeekData?.actualSets?.[index] || previousWeekSet?.actualSets?.[index]) && (
+              {(set.lastWeekData?.actualSets?.[index] ||
+                previousWeekSet?.actualSets?.[index]) && (
                 <div className="text-xs text-blue-400">
-                  Last week: {(set.lastWeekData?.actualSets?.[index] || previousWeekSet?.actualSets?.[index])?.reps}×
-                  {(set.lastWeekData?.actualSets?.[index] || previousWeekSet?.actualSets?.[index])?.weight}
+                  Last week:{" "}
+                  {
+                    (
+                      set.lastWeekData?.actualSets?.[index] ||
+                      previousWeekSet?.actualSets?.[index]
+                    )?.reps
+                  }
+                  ×
+                  {
+                    (
+                      set.lastWeekData?.actualSets?.[index] ||
+                      previousWeekSet?.actualSets?.[index]
+                    )?.weight
+                  }
                 </div>
               )}
 
               {/* Show save status */}
-              {actualSet.reps && actualSet.reps > 0 && actualSet.weight && actualSet.weight > 0 ? (
+              {actualSet.reps &&
+              actualSet.reps > 0 &&
+              actualSet.weight &&
+              actualSet.weight > 0 ? (
                 <div className="text-xs text-green-400">✓ Will be saved</div>
               ) : (
-                <div className="text-xs text-yellow-400">⚠ Incomplete - won't be saved</div>
+                <div className="text-xs text-yellow-400">
+                  ⚠ Incomplete - won't be saved
+                </div>
               )}
 
               {/* Show set source indicator for strip sets */}

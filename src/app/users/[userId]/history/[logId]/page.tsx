@@ -195,10 +195,14 @@ function SetsTable({ sets }: { sets: SetItem[] }) {
                 <td className="pr-2 py-1 text-gray-200">{idx + 1}</td>
                 <td className="pr-2 py-1 text-orange-400">Strip Set</td>
                 <td className="pr-2 py-1 text-gray-200">
-                  {set.actualSets ? set.actualSets.map((s) => s.reps).join(", ") : set.stripSets.map((s) => s.reps).join(", ")}
+                  {set.actualSets
+                    ? set.actualSets.map((s) => s.reps).join(", ")
+                    : set.stripSets.map((s) => s.reps).join(", ")}
                 </td>
                 <td className="pr-2 py-1 text-gray-200">
-                  {set.actualSets ? set.actualSets.map((s) => s.weight).join(", ") : set.stripSets.map((s) => s.weight).join(", ")}
+                  {set.actualSets
+                    ? set.actualSets.map((s) => s.weight).join(", ")
+                    : set.stripSets.map((s) => s.weight).join(", ")}
                 </td>
                 <td className="py-1">
                   {set.completed ? (

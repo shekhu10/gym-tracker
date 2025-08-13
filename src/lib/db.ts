@@ -118,7 +118,7 @@ export const userDb = {
       `;
       return result[0] || null;
     }
-    
+
     return null;
   },
 
