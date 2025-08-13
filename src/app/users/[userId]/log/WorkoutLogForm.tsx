@@ -175,13 +175,11 @@ export function WorkoutLogForm({
 
         {/* Navigation Buttons */}
         {log.exercises.length > 0 && (
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4">
+          <div className="flex gap-3 mt-4">
             <Button
               variant="secondary"
               size="sm"
-              onClick={() =>
-                setCurrentExerciseIdx((idx) => Math.max(0, idx - 1))
-              }
+              onClick={() => setCurrentExerciseIdx((idx) => Math.max(0, idx - 1))}
               disabled={currentExerciseIdx === 0}
               className="w-full sm:w-auto"
             >
@@ -191,22 +189,13 @@ export function WorkoutLogForm({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() =>
-                  setCurrentExerciseIdx((idx) =>
-                    Math.min(log.exercises.length - 1, idx + 1),
-                  )
-                }
+                onClick={() => setCurrentExerciseIdx((idx) => Math.min(log.exercises.length - 1, idx + 1))}
                 className="w-full sm:w-auto"
               >
                 Next Exercise
               </Button>
             ) : (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={onSave}
-                className="w-full sm:w-auto"
-              >
+              <Button variant="primary" size="sm" onClick={onSave} className="w-full sm:w-auto">
                 Save Workout Log
               </Button>
             )}
