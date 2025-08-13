@@ -80,22 +80,38 @@ export default function UsersTable() {
   };
 
   const handleUpdate = async (id: number) => {
+    // Validate input
+    if (!editName.trim() || !editEmail.trim()) {
+      alert("Name and email cannot be empty");
+      return;
+    }
+    
     try {
+      console.log('Updating user:', id, { name: editName, email: editEmail });
+      
       const res = await fetch(`/api/users/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editName, email: editEmail }),
+        body: JSON.stringify({ name: editName.trim(), email: editEmail.trim() }),
       });
+      
+      console.log('Response status:', res.status);
+      
       if (!res.ok) {
         const err = await res.json();
-        alert(err.error || "Failed to update");
+        console.error('API Error:', err);
+        alert(err.error || `Failed to update (Status: ${res.status})`);
         return;
       }
+      
+      const updatedUser = await res.json();
+      console.log('User updated successfully:', updatedUser);
+      
       cancelEdit();
       fetchUsers();
     } catch (err) {
-      console.error(err);
-      alert("Failed to update user");
+      console.error('Update error:', err);
+      alert(`Failed to update user: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -153,7 +169,6 @@ export default function UsersTable() {
               <div className="space-y-3">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <div className="text-sm text-gray-300">ID: {u.id}</div>
                     <div className="font-medium text-white">
                       {editingId === u.id ? (
                         <input

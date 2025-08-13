@@ -90,29 +90,36 @@ export const userDb = {
 
   // Update user
   async update(id: number, data: { name?: string; email?: string }) {
-    const updates: string[] = [];
-    const values: any[] = [];
-
-    if (data.name !== undefined) {
-      updates.push("name");
-      values.push(data.name);
+    if (data.name !== undefined && data.email !== undefined) {
+      // Update both name and email
+      const result = await sql`
+        UPDATE "User"
+        SET name = ${data.name}, email = ${data.email}
+        WHERE id = ${id}
+        RETURNING id, name, email, "createdAt"
+      `;
+      return result[0] || null;
+    } else if (data.name !== undefined) {
+      // Update only name
+      const result = await sql`
+        UPDATE "User"
+        SET name = ${data.name}
+        WHERE id = ${id}
+        RETURNING id, name, email, "createdAt"
+      `;
+      return result[0] || null;
+    } else if (data.email !== undefined) {
+      // Update only email
+      const result = await sql`
+        UPDATE "User"
+        SET email = ${data.email}
+        WHERE id = ${id}
+        RETURNING id, name, email, "createdAt"
+      `;
+      return result[0] || null;
     }
-    if (data.email !== undefined) {
-      updates.push("email");
-      values.push(data.email);
-    }
-
-    if (updates.length === 0) return null;
-
-    const setClause = updates.map((col, i) => `${col} = $${i + 2}`).join(", ");
-
-    const result = await sql`
-      UPDATE "User"
-      SET ${sql.unsafe(setClause)}
-      WHERE id = ${id}
-      RETURNING id, name, email, "createdAt"
-    `;
-    return result[0] || null;
+    
+    return null;
   },
 
   // Delete user
