@@ -358,7 +358,6 @@ function SingleExerciseLogEditor({ exercise, planExercise, previousWeekExercise,
         </div>
       )}
 
-
       <div className="space-y-2">
         {/* Sets summary */}
         <div className="bg-gray-800 border border-gray-600 rounded p-3 mb-3">
