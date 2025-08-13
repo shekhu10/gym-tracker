@@ -227,7 +227,7 @@ function ExerciseLogEditor({
   onChange,
 }: ExerciseLogEditorProps) {
   const updateExercise = (updates: Partial<LogExercise>) => {
-    onChange({ ...exercise, ...updates });
+    onChange({ ...exercise, ...updates } as LogExercise);
   };
 
   if (exercise.type === "circuit") {
@@ -285,15 +285,6 @@ function ExerciseLogEditor({
                     (total: number, ex: any) => total + (ex.sets?.length || 0),
                     0,
                   ) || 0}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 bg-orange-500 rounded-full"></span>
-                <span className="text-gray-300">
-                  {exercise.exercises.reduce(
-                    (total: number, ex: any) => total + ex.sets.length,
-                    0,
-                  )}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -463,10 +454,6 @@ function SingleExerciseLogEditor({
               <span className="text-gray-300">
                 Last week sets: {previousWeekExercise?.sets?.length || 0}
               </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 bg-orange-500 rounded-full"></span>
-              <span className="text-gray-300">{exercise.sets.length}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 bg-green-400 rounded-full"></span>
@@ -668,9 +655,6 @@ function SetLogEditor({
               {!planSet && (previousWeekSet || set.lastWeekData) && (
                 <div className="text-xs text-orange-400">From last week</div>
               )}
-              {!previousWeekSet && !set.lastWeekData && planSet && (
-                <div className="text-xs text-green-400">Target set</div>
-              )}
               {!planSet && !previousWeekSet && !set.lastWeekData && (
                 <div className="text-xs text-gray-500">Extra set</div>
               )}
@@ -747,9 +731,6 @@ function SetLogEditor({
         {/* Show set source indicator */}
         {!planSet && (previousWeekSet || set.lastWeekData) && (
           <div className="text-xs text-orange-400">From last week</div>
-        )}
-        {!previousWeekSet && !set.lastWeekData && planSet && (
-          <div className="text-xs text-green-400">Target set</div>
         )}
         {!planSet && !previousWeekSet && !set.lastWeekData && (
           <div className="text-xs text-gray-500">Extra set</div>
