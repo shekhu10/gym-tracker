@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 
-
 export type SetStrip = { reps: number; weight: number };
 export type NormalSet = {
   reps: number | "";
@@ -56,7 +55,9 @@ export function WeeklyPlanForm({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Workout Day Name</label>
+        <label className="block text-sm font-medium mb-1">
+          Workout Day Name
+        </label>
         <input
           type="text"
           value={plan.workoutDay}
@@ -233,7 +234,9 @@ function SingleFields({
         <input
           type="number"
           value={ex.restAfterExercise}
-          onChange={(e) => update({ restAfterExercise: Number(e.target.value) })}
+          onChange={(e) =>
+            update({ restAfterExercise: Number(e.target.value) })
+          }
           className="border rounded p-1"
         />
       </div>
@@ -303,7 +306,12 @@ function NormalSetEditor({
         <option value="warmup">Warmup</option>
         <option value="normal">Normal</option>
       </select>
-      <Button size="sm" variant="secondary" className="text-red-600" onClick={onRemove}>
+      <Button
+        size="sm"
+        variant="secondary"
+        className="text-red-600"
+        onClick={onRemove}
+      >
         X
       </Button>
     </div>
@@ -325,10 +333,16 @@ function StripSetEditor({
     onChange({ ...strip, stripSets: list });
   }
   function addStrip() {
-    onChange({ ...strip, stripSets: [...strip.stripSets, { reps: 0, weight: 0 }] });
+    onChange({
+      ...strip,
+      stripSets: [...strip.stripSets, { reps: 0, weight: 0 }],
+    });
   }
   function removeStrip(idx: number) {
-    onChange({ ...strip, stripSets: strip.stripSets.filter((_, i) => i !== idx) });
+    onChange({
+      ...strip,
+      stripSets: strip.stripSets.filter((_, i) => i !== idx),
+    });
   }
   return (
     <div>
@@ -339,17 +353,26 @@ function StripSetEditor({
             type="number"
             placeholder="Reps"
             value={ss.reps}
-            onChange={(e) => updateStrip(idx, { ...ss, reps: Number(e.target.value) })}
+            onChange={(e) =>
+              updateStrip(idx, { ...ss, reps: Number(e.target.value) })
+            }
             className="w-20 border rounded p-1"
           />
           <input
             type="number"
             placeholder="Weight"
             value={ss.weight}
-            onChange={(e) => updateStrip(idx, { ...ss, weight: Number(e.target.value) })}
+            onChange={(e) =>
+              updateStrip(idx, { ...ss, weight: Number(e.target.value) })
+            }
             className="w-24 border rounded p-1"
           />
-          <Button size="sm" variant="secondary" className="text-red-600" onClick={() => removeStrip(idx)}>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="text-red-600"
+            onClick={() => removeStrip(idx)}
+          >
             remove
           </Button>
         </div>
@@ -357,7 +380,12 @@ function StripSetEditor({
       <Button size="sm" variant="primary" onClick={addStrip}>
         + add strip
       </Button>
-      <Button size="sm" variant="secondary" className="text-red-600 ml-2" onClick={onRemove}>
+      <Button
+        size="sm"
+        variant="secondary"
+        className="text-red-600 ml-2"
+        onClick={onRemove}
+      >
         delete group
       </Button>
     </div>
@@ -372,7 +400,10 @@ function CircuitFields({
   ex: CircuitExercise;
   update: (f: Partial<CircuitExercise>) => void;
 }) {
-  function updateNestedExercise(idx: number, e: { name: string; sets: NormalSet[] }) {
+  function updateNestedExercise(
+    idx: number,
+    e: { name: string; sets: NormalSet[] },
+  ) {
     const list = [...ex.exercises];
     list[idx] = e;
     update({ exercises: list });
@@ -398,21 +429,27 @@ function CircuitFields({
         <input
           type="number"
           value={ex.restBetweenExercises}
-          onChange={(e) => update({ restBetweenExercises: Number(e.target.value) })}
+          onChange={(e) =>
+            update({ restBetweenExercises: Number(e.target.value) })
+          }
           className="border rounded p-1"
         />
         <label className="text-sm">Rest Between Rounds (sec)</label>
         <input
           type="number"
           value={ex.restBetweenRounds}
-          onChange={(e) => update({ restBetweenRounds: Number(e.target.value) })}
+          onChange={(e) =>
+            update({ restBetweenRounds: Number(e.target.value) })
+          }
           className="border rounded p-1"
         />
         <label className="text-sm">Rest After Exercise (sec)</label>
         <input
           type="number"
           value={ex.restAfterExercise}
-          onChange={(e) => update({ restAfterExercise: Number(e.target.value) })}
+          onChange={(e) =>
+            update({ restAfterExercise: Number(e.target.value) })
+          }
           className="border rounded p-1"
         />
       </div>
@@ -426,7 +463,9 @@ function CircuitFields({
                 type="text"
                 placeholder="Exercise name"
                 value={ce.name}
-                onChange={(e) => updateNestedExercise(idx, { ...ce, name: e.target.value })}
+                onChange={(e) =>
+                  updateNestedExercise(idx, { ...ce, name: e.target.value })
+                }
                 className="flex-1 border rounded p-1"
               />
               <Button

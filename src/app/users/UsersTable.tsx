@@ -1,119 +1,119 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface User {
-  id: number
-  name: string
-  email: string
+  id: number;
+  name: string;
+  email: string;
 }
 
 export default function UsersTable() {
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Create form state
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
   // Edit form state
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [editName, setEditName] = useState('')
-  const [editEmail, setEditEmail] = useState('')
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
 
   const fetchUsers = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const res = await fetch('/api/users')
-      const data = await res.json()
-      setUsers(data)
+      const res = await fetch("/api/users");
+      const data = await res.json();
+      setUsers(data);
     } catch (err) {
-      console.error(err)
-      setError('Failed to fetch users')
+      console.error(err);
+      setError("Failed to fetch users");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchUsers()
-  }, [])
+    fetchUsers();
+  }, []);
 
   const resetCreateForm = () => {
-    setName('')
-    setEmail('')
-  }
+    setName("");
+    setEmail("");
+  };
 
   const handleCreate = async () => {
-    if (!name || !email) return
+    if (!name || !email) return;
     try {
-      const res = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email }),
-      })
+      });
       if (!res.ok) {
-        const err = await res.json()
-        alert(err.error || 'Failed to create user')
-        return
+        const err = await res.json();
+        alert(err.error || "Failed to create user");
+        return;
       }
-      resetCreateForm()
-      fetchUsers()
+      resetCreateForm();
+      fetchUsers();
     } catch (err) {
-      console.error(err)
-      alert('Failed to create user')
+      console.error(err);
+      alert("Failed to create user");
     }
-  }
+  };
 
   const startEdit = (user: User) => {
-    setEditingId(user.id)
-    setEditName(user.name)
-    setEditEmail(user.email)
-  }
+    setEditingId(user.id);
+    setEditName(user.name);
+    setEditEmail(user.email);
+  };
 
   const cancelEdit = () => {
-    setEditingId(null)
-    setEditName('')
-    setEditEmail('')
-  }
+    setEditingId(null);
+    setEditName("");
+    setEditEmail("");
+  };
 
   const handleUpdate = async (id: number) => {
     try {
       const res = await fetch(`/api/users/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editName, email: editEmail }),
-      })
+      });
       if (!res.ok) {
-        const err = await res.json()
-        alert(err.error || 'Failed to update')
-        return
+        const err = await res.json();
+        alert(err.error || "Failed to update");
+        return;
       }
-      cancelEdit()
-      fetchUsers()
+      cancelEdit();
+      fetchUsers();
     } catch (err) {
-      console.error(err)
-      alert('Failed to update user')
+      console.error(err);
+      alert("Failed to update user");
     }
-  }
+  };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Delete user?')) return
+    if (!confirm("Delete user?")) return;
     try {
-      const res = await fetch(`/api/users/${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
       if (!res.ok) {
-        const err = await res.json()
-        alert(err.error || 'Failed to delete')
-        return
+        const err = await res.json();
+        alert(err.error || "Failed to delete");
+        return;
       }
-      fetchUsers()
+      fetchUsers();
     } catch (err) {
-      console.error(err)
-      alert('Failed to delete user')
+      console.error(err);
+      alert("Failed to delete user");
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -146,7 +146,10 @@ export default function UsersTable() {
       ) : (
         <div className="space-y-4">
           {users.map((u) => (
-            <div key={u.id} className="bg-gray-800 border border-gray-600 rounded-lg p-4 shadow-sm">
+            <div
+              key={u.id}
+              className="bg-gray-800 border border-gray-600 rounded-lg p-4 shadow-sm"
+            >
               <div className="space-y-3">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -160,12 +163,17 @@ export default function UsersTable() {
                           placeholder="Name"
                         />
                       ) : (
-                        <Link href={`/users/${u.id}`} className="link link-primary text-blue-400">{u.name}</Link>
+                        <Link
+                          href={`/users/${u.id}`}
+                          className="link link-primary text-blue-400"
+                        >
+                          {u.name}
+                        </Link>
                       )}
                     </div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="text-sm text-gray-300">Email:</div>
                   <div>
@@ -185,19 +193,31 @@ export default function UsersTable() {
                 <div className="flex gap-2 pt-2">
                   {editingId === u.id ? (
                     <>
-                      <button className="btn btn-sm btn-success flex-1" onClick={() => handleUpdate(u.id)}>
+                      <button
+                        className="btn btn-sm btn-success flex-1"
+                        onClick={() => handleUpdate(u.id)}
+                      >
                         Save
                       </button>
-                      <button className="btn btn-sm flex-1" onClick={() => cancelEdit}>
+                      <button
+                        className="btn btn-sm flex-1"
+                        onClick={() => cancelEdit}
+                      >
                         Cancel
                       </button>
                     </>
                   ) : (
                     <>
-                      <button className="btn btn-sm flex-1" onClick={() => startEdit(u)}>
+                      <button
+                        className="btn btn-sm flex-1"
+                        onClick={() => startEdit(u)}
+                      >
                         Edit
                       </button>
-                      <button className="btn btn-sm btn-error flex-1" onClick={() => handleDelete(u.id)}>
+                      <button
+                        className="btn btn-sm btn-error flex-1"
+                        onClick={() => handleDelete(u.id)}
+                      >
                         Delete
                       </button>
                     </>
@@ -206,14 +226,12 @@ export default function UsersTable() {
               </div>
             </div>
           ))}
-          
+
           {users.length === 0 && (
-            <div className="text-center py-8 text-gray-400">
-              No users
-            </div>
+            <div className="text-center py-8 text-gray-400">No users</div>
           )}
         </div>
       )}
     </div>
-  )
+  );
 }

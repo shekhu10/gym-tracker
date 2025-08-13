@@ -1,91 +1,104 @@
-"use client"
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+"use client";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 
 interface SetLog {
-  reps: number | ""
-  weight: number | ""
-  type?: "warmup" | "normal"
-  completed?: boolean
+  reps: number | "";
+  weight: number | "";
+  type?: "warmup" | "normal";
+  completed?: boolean;
 }
 
 interface StripSet {
-  type: "strip"
-  stripSets: { reps: number; weight: number }[]
-  actualSets?: SetLog[]
-  completed?: boolean
+  type: "strip";
+  stripSets: { reps: number; weight: number }[];
+  actualSets?: SetLog[];
+  completed?: boolean;
 }
 
-type SetItem = SetLog | StripSet
+type SetItem = SetLog | StripSet;
 
 interface SingleExercise {
-  type: "single"
-  name: string
-  sets: SetItem[]
-  restBetweenSets?: number
-  restAfterExercise?: number
-  completed?: boolean
+  type: "single";
+  name: string;
+  sets: SetItem[];
+  restBetweenSets?: number;
+  restAfterExercise?: number;
+  completed?: boolean;
 }
 
 interface CircuitExercise {
-  type: "circuit"
-  name: string
-  rounds: number
-  exercises: SingleExercise[]
-  restBetweenExercises?: number
-  restBetweenRounds?: number
-  restAfterExercise?: number
-  completed?: boolean
+  type: "circuit";
+  name: string;
+  rounds: number;
+  exercises: SingleExercise[];
+  restBetweenExercises?: number;
+  restBetweenRounds?: number;
+  restAfterExercise?: number;
+  completed?: boolean;
 }
 
-type Exercise = SingleExercise | CircuitExercise
+type Exercise = SingleExercise | CircuitExercise;
 
 interface WorkoutLog {
-  id: number
-  date: string
-  dayName: string
-  planName: string
+  id: number;
+  date: string;
+  dayName: string;
+  planName: string;
   entries: {
-    exercises: Exercise[]
-    startTime?: string
-    endTime?: string
-    notes?: string
-  }
+    exercises: Exercise[];
+    startTime?: string;
+    endTime?: string;
+    notes?: string;
+  };
 }
 
 export default function LogDetailPage() {
-  const params = useParams<{ userId: string; logId: string }>()
-  const router = useRouter()
-  const { userId, logId } = params
-  const [log, setLog] = useState<WorkoutLog | null>(null)
-  const [error, setError] = useState('')
+  const params = useParams<{ userId: string; logId: string }>();
+  const router = useRouter();
+  const { userId, logId } = params;
+  const [log, setLog] = useState<WorkoutLog | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    ;(async () => {
-      const res = await fetch(`/api/users/${userId}/logs/${logId}`)
-      if (res.ok) setLog(await res.json())
+    (async () => {
+      const res = await fetch(`/api/users/${userId}/logs/${logId}`);
+      if (res.ok) setLog(await res.json());
       else {
-        const e = await res.json()
-        setError(e.error || 'Error loading log')
+        const e = await res.json();
+        setError(e.error || "Error loading log");
       }
-    })()
-  }, [userId, logId])
+    })();
+  }, [userId, logId]);
 
-  if (error) return <div className="p-4 bg-black min-h-screen"><p className="text-red-400">{error}</p></div>
-  if (!log) return <div className="p-4 bg-black min-h-screen"><p className="text-white">Loading...</p></div>
+  if (error)
+    return (
+      <div className="p-4 bg-black min-h-screen">
+        <p className="text-red-400">{error}</p>
+      </div>
+    );
+  if (!log)
+    return (
+      <div className="p-4 bg-black min-h-screen">
+        <p className="text-white">Loading...</p>
+      </div>
+    );
 
   return (
     <div className="p-4 max-w-2xl mx-auto bg-black min-h-screen">
-      <button onClick={() => router.back()} className="text-blue-400 mb-4 underline hover:text-blue-300">
+      <button
+        onClick={() => router.back()}
+        className="text-blue-400 mb-4 underline hover:text-blue-300"
+      >
         ← Back
       </button>
       <h1 className="text-2xl font-bold mb-2 text-white">{log.planName}</h1>
       <p className="mb-4 text-gray-300">
-        {new Date(log.date).toLocaleDateString('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
+        {new Date(log.date).toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "short",
+          day: "numeric",
         })}
         {` (${log.dayName})`}
       </p>
@@ -95,12 +108,14 @@ export default function LogDetailPage() {
         <div className="bg-gray-900 border border-gray-600 p-4 rounded mb-4">
           {log.entries.startTime && (
             <p className="text-sm mb-1 text-gray-200">
-              <strong className="text-white">Start Time:</strong> {log.entries.startTime}
+              <strong className="text-white">Start Time:</strong>{" "}
+              {log.entries.startTime}
             </p>
           )}
           {log.entries.endTime && (
             <p className="text-sm mb-1 text-gray-200">
-              <strong className="text-white">End Time:</strong> {log.entries.endTime}
+              <strong className="text-white">End Time:</strong>{" "}
+              {log.entries.endTime}
             </p>
           )}
           {log.entries.notes && (
@@ -116,7 +131,7 @@ export default function LogDetailPage() {
         <ExerciseDisplay key={i} exercise={ex} />
       ))}
     </div>
-  )
+  );
 }
 
 function ExerciseDisplay({ exercise }: { exercise: Exercise }) {
@@ -129,17 +144,22 @@ function ExerciseDisplay({ exercise }: { exercise: Exercise }) {
         </h3>
         <div className="space-y-3">
           {exercise.exercises.map((singleEx, idx) => (
-            <div key={idx} className="bg-black p-3 rounded border border-gray-600">
+            <div
+              key={idx}
+              className="bg-black p-3 rounded border border-gray-600"
+            >
               <h4 className="font-medium mb-2 text-white">
                 {singleEx.name}
-                {singleEx.completed && <span className="ml-2 text-green-400">✓</span>}
+                {singleEx.completed && (
+                  <span className="ml-2 text-green-400">✓</span>
+                )}
               </h4>
               <SetsTable sets={singleEx.sets} />
             </div>
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -150,7 +170,7 @@ function ExerciseDisplay({ exercise }: { exercise: Exercise }) {
       </h3>
       <SetsTable sets={exercise.sets} />
     </div>
-  )
+  );
 }
 
 function SetsTable({ sets }: { sets: SetItem[] }) {
@@ -173,10 +193,10 @@ function SetsTable({ sets }: { sets: SetItem[] }) {
                 <td className="pr-2 py-1 text-gray-200">{idx + 1}</td>
                 <td className="pr-2 py-1 text-orange-400">Strip Set</td>
                 <td className="pr-2 py-1 text-gray-200">
-                  {set.stripSets.map(s => s.reps).join(", ")}
+                  {set.stripSets.map((s) => s.reps).join(", ")}
                 </td>
                 <td className="pr-2 py-1 text-gray-200">
-                  {set.stripSets.map(s => s.weight).join(", ")}
+                  {set.stripSets.map((s) => s.weight).join(", ")}
                 </td>
                 <td className="py-1">
                   {set.completed ? (
@@ -186,7 +206,7 @@ function SetsTable({ sets }: { sets: SetItem[] }) {
                   )}
                 </td>
               </tr>
-            )
+            );
           }
 
           return (
@@ -209,9 +229,9 @@ function SetsTable({ sets }: { sets: SetItem[] }) {
                 )}
               </td>
             </tr>
-          )
+          );
         })}
       </tbody>
     </table>
-  )
+  );
 }

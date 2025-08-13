@@ -14,7 +14,7 @@ const eslintConfig = [
   {
     // This is the new object that overrides the rule
     rules: {
-      "@typescript-eslint/no-explicit-any": "off"
+      "@typescript-eslint/no-explicit-any": "off",
     },
     // Optional: Use 'files' to apply this override only to certain files
     // files: ["**/*.ts", "**/*.tsx"]

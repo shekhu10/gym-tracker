@@ -1,8 +1,8 @@
-import UsersTable from './UsersTable'
+import UsersTable from "./UsersTable";
 
 export const metadata = {
-  title: 'Users',
-}
+  title: "Users",
+};
 
 export default function UsersPage() {
   return (
@@ -10,5 +10,5 @@ export default function UsersPage() {
       <h1 className="text-xl sm:text-2xl font-semibold mb-4">Users</h1>
       <UsersTable />
     </main>
-  )
+  );
 }

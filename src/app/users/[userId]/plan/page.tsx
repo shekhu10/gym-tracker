@@ -10,7 +10,7 @@ const emptyPlan: Plan = { workoutDay: "", exercises: [] };
 export default function WeeklyPlanPage() {
   const { userId } = useParams<{ userId: string }>();
   const [plans, setPlans] = useState<Record<string, Plan | null>>({});
-  const [selected, setSelected] = useState<typeof dayKeys[number]>("mon");
+  const [selected, setSelected] = useState<(typeof dayKeys)[number]>("mon");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -23,7 +23,7 @@ export default function WeeklyPlanPage() {
         dayKeys.map(async (d) => {
           const res = await fetch(`/api/users/${userId}/plans/${d}`);
           obj[d] = res.ok ? await res.json() : null;
-        })
+        }),
       );
       setPlans(obj);
       setLoading(false);
@@ -31,7 +31,8 @@ export default function WeeklyPlanPage() {
   }, [userId]);
 
   const currentPlan: Plan = plans[selected] ?? emptyPlan;
-  const updateCurrent = (p: Plan) => setPlans((prev) => ({ ...prev, [selected]: p }));
+  const updateCurrent = (p: Plan) =>
+    setPlans((prev) => ({ ...prev, [selected]: p }));
 
   const saveCurrent = async () => {
     setLoading(true);
@@ -79,10 +80,16 @@ export default function WeeklyPlanPage() {
             <Button variant="primary" onClick={saveCurrent}>
               Save
             </Button>
-            <Button variant="secondary" className="bg-red-600 text-white" onClick={clearCurrent}>
+            <Button
+              variant="secondary"
+              className="bg-red-600 text-white"
+              onClick={clearCurrent}
+            >
               Clear
             </Button>
-            {message && <span className="text-green-600 ml-2 text-sm">{message}</span>}
+            {message && (
+              <span className="text-green-600 ml-2 text-sm">{message}</span>
+            )}
           </div>
         </>
       )}
