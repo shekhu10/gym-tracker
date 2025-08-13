@@ -8,11 +8,13 @@ import { Plan, Exercise, SingleExercise, CircuitExercise, SetItem, NormalSet, St
 // Log-specific types that extend the plan types
 export interface LogSet extends NormalSet {
   completed?: boolean;
+  lastWeekData?: any; // Store last week's data for display
 }
 
 export interface LogStripSet extends StripSet {
   actualSets: LogSet[];
   completed?: boolean;
+  lastWeekData?: any; // Store last week's data for display
 }
 
 export type LogSetItem = LogSet | LogStripSet;
@@ -84,48 +86,41 @@ export function WorkoutLogForm({ log, plan, previousWeekLog, onChange, onSave }:
       <div className="bg-black border border-gray-600 p-4 rounded-lg space-y-3 shadow-sm">
         <div>
           <label className="block text-sm font-medium mb-1 text-white">Workout Day</label>
-          <input
-            type="text"
-            value={log.workoutDay}
-            onChange={(e) => updateLog({ workoutDay: e.target.value })}
-            className="w-full border rounded p-2"
-            placeholder="e.g., Push Day, Legs, etc."
-          />
-        </div>
-        
-        {/* Progress indicator */}
-        <div className="mt-4">
-          <div className="flex justify-between text-sm text-gray-300 mb-2">
-            <span>Progress: {completedExercises} of {log.exercises.length} exercises completed</span>
-            <span>{Math.round(progressPercentage)}%</span>
-          </div>
-          <div className="w-full bg-gray-700 rounded-full h-2">
-            <div 
-              className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
-              style={{ width: `${progressPercentage}%` }}
-            ></div>
+          <div className="w-full border rounded p-2 bg-gray-700 text-white">
+            {log.workoutDay || "No workout day specified"}
           </div>
         </div>
       </div>
 
-      {/* Exercise navigation tabs */}
+      {/* Exercise navigation dropdown */}
       {log.exercises.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
-          {log.exercises.map((exercise, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentExerciseIdx(index)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                index === currentExerciseIdx
-                  ? 'bg-blue-600 text-white'
-                  : exercise.completed
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
-            >
-              {index + 1}. {exercise.name}
-            </button>
-          ))}
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2 text-white">Select Exercise</label>
+          <select
+            value={currentExerciseIdx}
+            onChange={(e) => setCurrentExerciseIdx(Number(e.target.value))}
+            className="w-full border border-gray-600 rounded-lg p-3 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            {log.exercises.map((exercise, index) => (
+              <option key={index} value={index} className="bg-gray-800 text-white">
+                {index + 1}. {exercise.name} {exercise.completed ? '✓' : ''}
+              </option>
+            ))}
+          </select>
+          
+          {/* Progress indicator below dropdown */}
+          <div className="mt-3">
+            <div className="flex justify-between text-sm text-gray-300 mb-2">
+              <span>Progress: {completedExercises} of {log.exercises.length} exercises completed</span>
+              <span>{Math.round(progressPercentage)}%</span>
+            </div>
+            <div className="w-full bg-gray-700 rounded-full h-2">
+              <div 
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${progressPercentage}%` }}
+              ></div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -146,12 +141,13 @@ export function WorkoutLogForm({ log, plan, previousWeekLog, onChange, onSave }:
 
         {/* Navigation Buttons */}
         {log.exercises.length > 0 && (
-          <div className="flex gap-3 mt-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4">
             <Button
               variant="secondary"
               size="sm"
               onClick={() => setCurrentExerciseIdx((idx) => Math.max(0, idx - 1))}
               disabled={currentExerciseIdx === 0}
+              className="w-full sm:w-auto"
             >
               Previous
             </Button>
@@ -160,11 +156,12 @@ export function WorkoutLogForm({ log, plan, previousWeekLog, onChange, onSave }:
                 variant="secondary"
                 size="sm"
                 onClick={() => setCurrentExerciseIdx((idx) => Math.min(log.exercises.length - 1, idx + 1))}
+                className="w-full sm:w-auto"
               >
                 Next Exercise
               </Button>
             ) : (
-              <Button variant="primary" size="sm" onClick={onSave}>
+              <Button variant="primary" size="sm" onClick={onSave} className="w-full sm:w-auto">
                 Save Workout Log
               </Button>
             )}
@@ -208,7 +205,7 @@ function ExerciseLogEditor({ exercise, planExercise, previousWeekExercise, onCha
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3 text-sm">
           <div>
             <span className="text-gray-300">Target Rounds: </span>
             <span className="font-medium text-white">{exercise.rounds}</span>
@@ -227,6 +224,24 @@ function ExerciseLogEditor({ exercise, planExercise, previousWeekExercise, onCha
         </div>
 
         <div className="space-y-2">
+          {/* Sets summary for circuit */}
+          <div className="bg-gray-800 border border-gray-600 rounded p-3 mb-3">
+            <div className="flex flex-wrap gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                <span className="text-gray-300">Target sets: {planExercise?.type === "circuit" ? planExercise.exercises.reduce((total: number, ex: any) => total + ex.sets.length, 0) : 0}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 bg-blue-500 rounded-full"></span>
+                <span className="text-gray-300">Last week sets: {previousWeekExercise?.exercises?.reduce((total: number, ex: any) => total + (ex.sets?.length || 0), 0) || 0}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 bg-orange-500 rounded-full"></span>
+                <span className="text-gray-300">{exercise.exercises.reduce((total: number, ex: any) => total + ex.sets.length, 0)}</span>
+              </div>
+            </div>
+          </div>
+          
           {exercise.exercises.map((singleEx, index) => (
             <SingleExerciseLogEditor
               key={index}
@@ -313,7 +328,7 @@ function SingleExerciseLogEditor({ exercise, planExercise, previousWeekExercise,
       </div>
 
       {!isInCircuit && (
-        <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3 text-sm">
           <div>
             <span className="text-gray-300">Rest Between Sets: </span>
             <span className="text-gray-400">
@@ -330,6 +345,24 @@ function SingleExerciseLogEditor({ exercise, planExercise, previousWeekExercise,
       )}
 
       <div className="space-y-2">
+        {/* Sets summary */}
+        <div className="bg-gray-800 border border-gray-600 rounded p-3 mb-3">
+          <div className="flex flex-wrap gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+              <span className="text-gray-300">Target sets: {planExercise && 'sets' in planExercise ? planExercise.sets.length : 0}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 bg-blue-500 rounded-full"></span>
+              <span className="text-gray-300">Last week sets: {previousWeekExercise?.sets?.length || 0}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 bg-orange-500 rounded-full"></span>
+              <span className="text-gray-300">{exercise.sets.length}</span>
+            </div>
+          </div>
+        </div>
+        
         {exercise.sets.map((set, index) => (
           <SetLogEditor
             key={index}
@@ -389,31 +422,41 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
         
         <div className="space-y-1">
           {set.actualSets.map((actualSet, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <span className="text-sm w-8">{index + 1}:</span>
-              <input
-                type="number"
-                value={actualSet.reps || ""}
-                onChange={(e) => {
-                  const newActualSets = [...set.actualSets];
-                  newActualSets[index] = { ...actualSet, reps: Number(e.target.value) || 0 };
-                  onChange({ ...set, actualSets: newActualSets });
-                }}
-                className="w-16 border rounded px-1"
-                placeholder="Reps"
-              />
-              <span className="text-sm">×</span>
-              <input
-                type="number"
-                value={actualSet.weight || ""}
-                onChange={(e) => {
-                  const newActualSets = [...set.actualSets];
-                  newActualSets[index] = { ...actualSet, weight: Number(e.target.value) || 0 };
-                  onChange({ ...set, actualSets: newActualSets });
-                }}
-                className="w-20 border border-gray-600 rounded px-1 bg-gray-800 text-white"
-                placeholder="Weight"
-              />
+            <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              <span className="text-sm w-8">Strip {index + 1}:</span>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <input
+                  type="number"
+                  value={actualSet.reps || ""}
+                  onChange={(e) => {
+                    const newActualSets = [...set.actualSets];
+                    newActualSets[index] = { ...actualSet, reps: Number(e.target.value) || 0 };
+                    onChange({ ...set, actualSets: newActualSets });
+                  }}
+                  className="w-16 border rounded px-1"
+                  placeholder="Reps"
+                />
+                <span className="text-sm">×</span>
+                <input
+                  type="number"
+                  value={actualSet.weight || ""}
+                  onChange={(e) => {
+                    const newActualSets = [...set.actualSets];
+                    newActualSets[index] = { ...actualSet, weight: Number(e.target.value) || 0 };
+                    onChange({ ...set, actualSets: newActualSets });
+                  }}
+                  className="w-20 border border-gray-600 rounded px-1 bg-gray-800 text-white"
+                  placeholder="Weight"
+                />
+              </div>
+              
+              {/* Show last week data for strip sets if available */}
+              {set.lastWeekData?.actualSets?.[index] && (
+                <div className="text-xs text-blue-400">
+                  Last week: {set.lastWeekData.actualSets[index].reps}×{set.lastWeekData.actualSets[index].weight}
+                </div>
+              )}
+              
               <button
                 onClick={() => {
                   const newActualSets = [...set.actualSets];
@@ -449,38 +492,57 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
 
   // Regular set
   return (
-    <div className="flex items-center gap-3 p-2 border border-gray-600 rounded bg-gray-900">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-2 border border-gray-600 rounded bg-gray-900">
       <span className="text-sm font-medium w-12 text-white">Set {setNumber}</span>
-      <input
-        type="number"
-        value={set.reps || ""}
-        onChange={(e) => onChange({ ...set, reps: Number(e.target.value) || 0 })}
-        className="w-16 border border-gray-600 rounded px-2 py-1 bg-gray-800 text-white"
-        placeholder="Reps"
-      />
-      <span className="text-sm">×</span>
-      <input
-        type="number"
-        value={set.weight || ""}
-        onChange={(e) => onChange({ ...set, weight: Number(e.target.value) || 0 })}
-        className="w-20 border border-gray-600 rounded px-2 py-1 bg-gray-800 text-white"
-        placeholder="Weight"
-      />
+      <div className="flex items-center gap-2 w-full sm:w-auto">
+        <input
+          type="number"
+          value={set.reps || ""}
+          onChange={(e) => onChange({ ...set, reps: Number(e.target.value) || 0 })}
+          className="w-16 border border-gray-600 rounded px-2 py-1 bg-gray-800 text-white"
+          placeholder="Reps"
+        />
+        <span className="text-sm">×</span>
+        <input
+          type="number"
+          value={set.weight || ""}
+          onChange={(e) => onChange({ ...set, weight: Number(e.target.value) || 0 })}
+          className="w-20 border border-gray-600 rounded px-2 py-1 bg-gray-800 text-white"
+          placeholder="Weight"
+        />
+      </div>
       
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 w-full sm:w-auto">
         {planSet && planSet.type !== "strip" && (
           <div className="text-xs text-gray-400">
             Target: {planSet.reps}×{planSet.weight}
           </div>
         )}
-        {previousWeekSet && previousWeekSet.reps && previousWeekSet.weight && (
+        {/* Show last week data from either previousWeekSet or lastWeekData */}
+        {(previousWeekSet || set.lastWeekData) && (
           <div className="text-xs text-blue-400">
-            Last week: {previousWeekSet.reps}×{previousWeekSet.weight}
+            Last week: {(previousWeekSet || set.lastWeekData)?.reps}×{(previousWeekSet || set.lastWeekData)?.weight}
+          </div>
+        )}
+        {/* Show set source indicator */}
+        {!planSet && (previousWeekSet || set.lastWeekData) && (
+          <div className="text-xs text-orange-400">
+            From last week
+          </div>
+        )}
+        {!previousWeekSet && !set.lastWeekData && planSet && (
+          <div className="text-xs text-green-400">
+            Target set
+          </div>
+        )}
+        {!planSet && !previousWeekSet && !set.lastWeekData && (
+          <div className="text-xs text-gray-500">
+            Extra set
           </div>
         )}
       </div>
       
-      <div className="flex items-center gap-2 ml-auto">
+      <div className="flex items-center gap-2 ml-auto w-full sm:w-auto justify-end sm:justify-start">
         <button
           onClick={() => onChange({ ...set, completed: !set.completed })}
           className={`px-2 py-1 rounded text-xs font-medium transition-colors ${

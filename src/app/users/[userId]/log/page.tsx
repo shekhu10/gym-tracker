@@ -58,8 +58,8 @@ export default function WorkoutLogPage() {
         setPlan(planData);
         setPreviousWeekLog(previousWeekData);
         if (planData) {
-          // Initialize log from plan template
-          const logExercises: LogExercise[] = planData.exercises.map((exercise: Exercise) => {
+          // Initialize log from plan template with max sets logic
+          const logExercises: LogExercise[] = planData.exercises.map((exercise: Exercise, exerciseIndex: number) => {
             if (exercise.type === "circuit") {
               return {
                 type: "circuit" as const,
@@ -68,55 +68,148 @@ export default function WorkoutLogPage() {
                 restBetweenExercises: exercise.restBetweenExercises,
                 restBetweenRounds: exercise.restBetweenRounds,
                 restAfterExercise: exercise.restAfterExercise,
-                exercises: exercise.exercises.map((singleEx: any) => ({
-                  type: "single" as const,
-                  name: singleEx.name,
-                  restBetweenSets: 0,
-                  restAfterExercise: 0,
-                  sets: singleEx.sets.map((set: SetItem) => {
-                    if ('stripSets' in set) {
-                      const stripSet = set as unknown as StripSet;
-                      return {
-                        ...stripSet,
-                        actualSets: stripSet.stripSets.map((s: any) => ({ ...s, reps: 0, weight: 0, completed: false })),
-                        completed: false,
-                      };
+                exercises: exercise.exercises.map((singleEx: any, singleExIndex: number) => {
+                  // Get last week's data for this single exercise
+                  const lastWeekSingleEx = previousWeekData?.entries?.exercises?.[exerciseIndex]?.exercises?.[singleExIndex];
+                  const targetSets = singleEx.sets.length;
+                  const lastWeekSets = lastWeekSingleEx?.sets?.length || 0;
+                  const maxSets = Math.max(targetSets, lastWeekSets);
+                  
+                  // Create sets array with max number of sets
+                  const sets = [];
+                  for (let i = 0; i < maxSets; i++) {
+                    if (i < singleEx.sets.length) {
+                      // Use target set structure
+                      const targetSet = singleEx.sets[i];
+                      if ('stripSets' in targetSet) {
+                        const stripSet = targetSet as unknown as StripSet;
+                        sets.push({
+                          ...stripSet,
+                          actualSets: stripSet.stripSets.map((s: any) => ({ ...s, reps: 0, weight: 0, completed: false })),
+                          completed: false,
+                        });
+                      } else {
+                        sets.push({
+                          ...targetSet,
+                          reps: 0,
+                          weight: 0,
+                          completed: false,
+                        });
+                      }
                     } else {
-                      return {
-                        ...set,
-                        reps: 0,
-                        weight: 0,
-                        completed: false,
-                      };
+                      // Add extra set based on last week's data or create empty set
+                      const lastWeekSet = lastWeekSingleEx?.sets?.[i];
+                      if (lastWeekSet) {
+                        if ('stripSets' in lastWeekSet) {
+                          sets.push({
+                            type: "strip" as const,
+                            stripSets: lastWeekSet.stripSets || [],
+                            actualSets: (lastWeekSet.actualSets || lastWeekSet.stripSets || []).map((s: any) => ({ ...s, reps: 0, weight: 0, completed: false })),
+                            completed: false,
+                            // Preserve last week's data for display
+                            lastWeekData: lastWeekSet
+                          });
+                        } else {
+                          sets.push({
+                            ...lastWeekSet,
+                            reps: 0,
+                            weight: 0,
+                            completed: false,
+                            // Preserve last week's data for display
+                            lastWeekData: lastWeekSet
+                          });
+                        }
+                      } else {
+                        // Create empty set
+                        sets.push({
+                          reps: 0,
+                          weight: 0,
+                          completed: false,
+                        });
+                      }
                     }
-                  }),
-                  completed: false,
-                })),
+                  }
+                  
+                  return {
+                    type: "single" as const,
+                    name: singleEx.name,
+                    restBetweenSets: 0,
+                    restAfterExercise: 0,
+                    sets,
+                    completed: false,
+                  };
+                }),
                 completed: false,
               };
             } else {
+              // Single exercise
+              // Get last week's data for this exercise
+              const lastWeekEx = previousWeekData?.entries?.exercises?.[exerciseIndex];
+              const targetSets = exercise.sets.length;
+              const lastWeekSets = lastWeekEx?.sets?.length || 0;
+              const maxSets = Math.max(targetSets, lastWeekSets);
+              
+              // Create sets array with max number of sets
+              const sets = [];
+              for (let i = 0; i < maxSets; i++) {
+                if (i < exercise.sets.length) {
+                  // Use target set structure
+                  const targetSet = exercise.sets[i];
+                  if ('stripSets' in targetSet) {
+                    const stripSet = targetSet as unknown as StripSet;
+                    sets.push({
+                      ...stripSet,
+                      actualSets: stripSet.stripSets.map((s: any) => ({ ...s, reps: 0, weight: 0, completed: false })),
+                      completed: false,
+                    });
+                  } else {
+                    sets.push({
+                      ...targetSet,
+                      reps: 0,
+                      weight: 0,
+                      completed: false,
+                    });
+                  }
+                } else {
+                  // Add extra set based on last week's data or create empty set
+                  const lastWeekSet = lastWeekEx?.sets?.[i];
+                  if (lastWeekSet) {
+                    if ('stripSets' in lastWeekSet) {
+                      sets.push({
+                        type: "strip" as const,
+                        stripSets: lastWeekSet.stripSets || [],
+                        actualSets: (lastWeekSet.actualSets || lastWeekSet.stripSets || []).map((s: any) => ({ ...s, reps: 0, weight: 0, completed: false })),
+                        completed: false,
+                        // Preserve last week's data for display
+                        lastWeekData: lastWeekSet
+                      });
+                    } else {
+                      sets.push({
+                        ...lastWeekSet,
+                        reps: 0,
+                        weight: 0,
+                        completed: false,
+                        // Preserve last week's data for display
+                        lastWeekData: lastWeekSet
+                      });
+                    }
+                  } else {
+                    // Create empty set
+                    sets.push({
+                      reps: 0,
+                      weight: 0,
+                      completed: false,
+                    });
+                  }
+                }
+              }
+              
               return {
                 type: "single" as const,
                 name: exercise.name,
                 restBetweenSets: exercise.restBetweenSets,
                 restAfterExercise: exercise.restAfterExercise,
-                sets: exercise.sets.map((set: SetItem) => {
-                  if ('stripSets' in set) {
-                    const stripSet = set as unknown as StripSet;
-                    return {
-                      ...stripSet,
-                      actualSets: stripSet.stripSets.map((s: any) => ({ ...s, reps: 0, weight: 0, completed: false })),
-                      completed: false,
-                    };
-                  } else {
-                    return {
-                      ...set,
-                      reps: 0,
-                      weight: 0,
-                      completed: false,
-                    };
-                  }
-                }),
+                sets,
                 completed: false,
               };
             }
@@ -178,7 +271,7 @@ export default function WorkoutLogPage() {
       
       {/* Date and Day Selection */}
       <div className="bg-black border border-gray-600 p-4 rounded-lg mb-6 shadow-sm">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1 text-white">Date</label>
             <input
@@ -192,8 +285,8 @@ export default function WorkoutLogPage() {
             <label className="block text-sm font-medium mb-1 text-white">Workout Day</label>
             <select
               value={selectedDay}
-              onChange={(e) => setSelectedDay(e.target.value as DayKey)}
-              className="w-full border rounded p-2"
+              disabled
+              className="w-full border rounded p-2 bg-gray-700 text-gray-300 cursor-not-allowed"
             >
               {dayKeys.map((day) => (
                 <option key={day} value={day}>
@@ -217,12 +310,12 @@ export default function WorkoutLogPage() {
             onSave={saveLog}
           />
           
-          <div className="flex gap-2 mt-6 items-center">
-            <Button variant="secondary" onClick={clearLog}>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 mt-6 items-center">
+            <Button variant="secondary" onClick={clearLog} className="w-full sm:w-auto">
               Clear Log
             </Button>
             {message && (
-              <span className={`ml-2 text-sm ${
+              <span className={`text-sm text-center sm:text-left ${
                 message.includes("Error") ? "text-red-600" : "text-green-600"
               }`}>
                 {message}
