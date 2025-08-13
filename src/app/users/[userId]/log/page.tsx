@@ -242,13 +242,53 @@ export default function WorkoutLogPage() {
     setMessage(null);
     
     try {
+      // Filter out incomplete sets (0 or empty reps/weight) before saving
+      const filteredLog = {
+        ...currentLog,
+        exercises: currentLog.exercises.map(exercise => {
+          if (exercise.type === "circuit") {
+            return {
+              ...exercise,
+              exercises: exercise.exercises.map(singleEx => ({
+                ...singleEx,
+                sets: singleEx.sets.filter(set => {
+                  if (set.type === "strip") {
+                    // For strip sets, filter out if all actual sets are incomplete
+                    return set.actualSets.some(actualSet => 
+                      actualSet.reps && actualSet.reps > 0 && actualSet.weight && actualSet.weight > 0
+                    );
+                  } else {
+                    // For regular sets, filter out if reps or weight is 0 or empty
+                    return set.reps && set.reps > 0 && set.weight && set.weight > 0;
+                  }
+                })
+              }))
+            };
+          } else {
+            // Single exercise
+            return {
+              ...exercise,
+              sets: exercise.sets.filter(set => {
+                if (set.type === "strip") {
+                  // For strip sets, filter out if all actual sets are incomplete
+                  return set.actualSets.some(actualSet => 
+                    actualSet.reps && actualSet.reps > 0 && actualSet.weight && actualSet.weight > 0
+                  );
+                } else {
+                  // For regular sets, filter out if reps or weight is 0 or empty
+                  return set.reps && set.reps > 0 && set.weight && set.weight > 0;
+                }
+              })
+            };
+          }
+        }),
+        dayKey: selectedDay,
+      };
+      
       const res = await fetch(`/api/users/${userId}/logs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...currentLog,
-          dayKey: selectedDay,
-        }),
+        body: JSON.stringify(filteredLog),
       });
       
       setMessage(res.ok ? "Workout logged successfully!" : "Error saving workout log");

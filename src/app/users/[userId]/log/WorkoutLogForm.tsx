@@ -239,6 +239,20 @@ function ExerciseLogEditor({ exercise, planExercise, previousWeekExercise, onCha
                 <span className="w-3 h-3 bg-orange-500 rounded-full"></span>
                 <span className="text-gray-300">{exercise.exercises.reduce((total: number, ex: any) => total + ex.sets.length, 0)}</span>
               </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 bg-green-400 rounded-full"></span>
+                <span className="text-gray-300">Will save: {exercise.exercises.reduce((total: number, ex: any) => {
+                  return total + ex.sets.filter((set: any) => {
+                    if (set.type === "strip") {
+                      return set.actualSets.some((actualSet: any) => 
+                        actualSet.reps && actualSet.reps > 0 && actualSet.weight && actualSet.weight > 0
+                      );
+                    } else {
+                      return set.reps && set.reps > 0 && set.weight && set.weight > 0;
+                    }
+                  }).length;
+                }, 0)}</span>
+              </div>
             </div>
           </div>
           
@@ -359,6 +373,18 @@ function SingleExerciseLogEditor({ exercise, planExercise, previousWeekExercise,
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 bg-orange-500 rounded-full"></span>
               <span className="text-gray-300">{exercise.sets.length}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 bg-green-400 rounded-full"></span>
+              <span className="text-gray-300">Will save: {exercise.sets.filter(set => {
+                if (set.type === "strip") {
+                  return set.actualSets.some(actualSet => 
+                    actualSet.reps && actualSet.reps > 0 && actualSet.weight && actualSet.weight > 0
+                  );
+                } else {
+                  return set.reps && set.reps > 0 && set.weight && set.weight > 0;
+                }
+              }).length}</span>
             </div>
           </div>
         </div>
@@ -524,6 +550,18 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
             Last week: {(previousWeekSet || set.lastWeekData)?.reps}×{(previousWeekSet || set.lastWeekData)?.weight}
           </div>
         )}
+        
+        {/* Show completion status */}
+        {set.reps && set.reps > 0 && set.weight && set.weight > 0 ? (
+          <div className="text-xs text-green-400">
+            ✓ Will be saved
+          </div>
+        ) : (
+          <div className="text-xs text-yellow-400">
+            ⚠ Incomplete - won't be saved
+          </div>
+        )}
+        
         {/* Show set source indicator */}
         {!planSet && (previousWeekSet || set.lastWeekData) && (
           <div className="text-xs text-orange-400">
