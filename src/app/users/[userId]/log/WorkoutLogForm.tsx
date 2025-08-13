@@ -682,10 +682,7 @@ function SetLogEditor({
           variant="secondary"
           size="sm"
           onClick={() => {
-            const newActualSets = [
-              ...set.actualSets,
-              { reps: 0, weight: 0 },
-            ];
+            const newActualSets = [...set.actualSets, { reps: 0, weight: 0 }];
             onChange({ ...set, actualSets: newActualSets });
           }}
           className="mt-2 text-xs"

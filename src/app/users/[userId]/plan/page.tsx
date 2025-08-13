@@ -105,7 +105,7 @@ export default function WeeklyPlanPage() {
       ) : (
         <>
           <WeeklyPlanForm plan={currentPlan} onChange={updateCurrent} />
-          
+
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 mt-6 items-center">
             <Button variant="primary" onClick={saveCurrent}>
               Save Plan

@@ -109,15 +109,24 @@ export default function WorkoutLogPage() {
                             const lastWeekSet = lastWeekSingleEx?.sets?.[i];
                             // Determine max strips between target and last week
                             const targetStrips = stripSet.stripSets.length;
-                            const lastWeekStrips = lastWeekSet?.actualSets?.length || lastWeekSet?.stripSets?.length || 0;
-                            const maxStrips = Math.max(targetStrips, lastWeekStrips);
-                            
+                            const lastWeekStrips =
+                              lastWeekSet?.actualSets?.length ||
+                              lastWeekSet?.stripSets?.length ||
+                              0;
+                            const maxStrips = Math.max(
+                              targetStrips,
+                              lastWeekStrips,
+                            );
+
                             sets.push({
                               ...stripSet,
-                              actualSets: Array.from({ length: maxStrips }, () => ({
-                                reps: 0,
-                                weight: 0,
-                              })),
+                              actualSets: Array.from(
+                                { length: maxStrips },
+                                () => ({
+                                  reps: 0,
+                                  weight: 0,
+                                }),
+                              ),
                               // Include last week data if available
                               lastWeekData: lastWeekSet || undefined,
                             });
@@ -197,9 +206,12 @@ export default function WorkoutLogPage() {
                       const lastWeekSet = lastWeekEx?.sets?.[i];
                       // Determine max strips between target and last week
                       const targetStrips = stripSet.stripSets.length;
-                      const lastWeekStrips = lastWeekSet?.actualSets?.length || lastWeekSet?.stripSets?.length || 0;
+                      const lastWeekStrips =
+                        lastWeekSet?.actualSets?.length ||
+                        lastWeekSet?.stripSets?.length ||
+                        0;
                       const maxStrips = Math.max(targetStrips, lastWeekStrips);
-                      
+
                       sets.push({
                         ...stripSet,
                         actualSets: Array.from({ length: maxStrips }, () => ({

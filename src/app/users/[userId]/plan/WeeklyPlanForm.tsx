@@ -107,7 +107,10 @@ function ExerciseList({
     <div>
       <h2 className="font-semibold mb-2 text-white">Exercises</h2>
       {exercises.map((ex, idx) => (
-        <div key={idx} className="border border-gray-600 rounded p-4 mb-4 bg-black shadow-sm">
+        <div
+          key={idx}
+          className="border border-gray-600 rounded p-4 mb-4 bg-black shadow-sm"
+        >
           <div className="flex justify-between items-center mb-3">
             <span className="font-medium text-white">Exercise {idx + 1}</span>
             <Button
@@ -125,7 +128,12 @@ function ExerciseList({
           />
         </div>
       ))}
-      <Button variant="primary" size="sm" onClick={addExercise} className="w-full sm:w-auto">
+      <Button
+        variant="primary"
+        size="sm"
+        onClick={addExercise}
+        className="w-full sm:w-auto"
+      >
         + Add Exercise
       </Button>
     </div>
@@ -174,8 +182,12 @@ function ExerciseForm({
           }}
           className="border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
-          <option value="single" className="bg-gray-800 text-white">Single</option>
-          <option value="circuit" className="bg-gray-800 text-white">Circuit</option>
+          <option value="single" className="bg-gray-800 text-white">
+            Single
+          </option>
+          <option value="circuit" className="bg-gray-800 text-white">
+            Circuit
+          </option>
         </select>
       </div>
 
@@ -226,17 +238,23 @@ function SingleFields({
     <div className="space-y-2 border-t border-gray-600 pt-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm text-gray-300 mb-1">Rest Between Sets (sec)</label>
+          <label className="block text-sm text-gray-300 mb-1">
+            Rest Between Sets (sec)
+          </label>
           <input
             type="number"
             value={ex.restBetweenSets}
-            onChange={(e) => update({ restBetweenSets: Number(e.target.value) })}
+            onChange={(e) =>
+              update({ restBetweenSets: Number(e.target.value) })
+            }
             className="w-full border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             placeholder="0"
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-300 mb-1">Rest After Exercise (sec)</label>
+          <label className="block text-sm text-gray-300 mb-1">
+            Rest After Exercise (sec)
+          </label>
           <input
             type="number"
             value={ex.restAfterExercise}
@@ -252,7 +270,10 @@ function SingleFields({
       <div>
         <p className="font-medium text-white mb-3">Sets</p>
         {ex.sets.map((s, idx) => (
-          <div key={idx} className="border border-gray-600 p-3 mb-3 rounded bg-gray-900 shadow-sm">
+          <div
+            key={idx}
+            className="border border-gray-600 p-3 mb-3 rounded bg-gray-900 shadow-sm"
+          >
             {"type" in s && s.type === "strip" ? (
               <StripSetEditor
                 strip={s}
@@ -315,8 +336,12 @@ function NormalSetEditor({
           onChange={(e) => onChange({ ...set, type: e.target.value as any })}
           className="border border-gray-600 rounded p-2 bg-gray-800 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
-          <option value="warmup" className="bg-gray-800 text-white">Warmup</option>
-          <option value="normal" className="bg-gray-800 text-white">Normal</option>
+          <option value="warmup" className="bg-gray-800 text-white">
+            Warmup
+          </option>
+          <option value="normal" className="bg-gray-800 text-white">
+            Normal
+          </option>
         </select>
         <Button
           size="sm"
@@ -361,7 +386,10 @@ function StripSetEditor({
     <div>
       <p className="text-sm font-medium mb-3 text-white">Strip Sets</p>
       {strip.stripSets.map((ss, idx) => (
-        <div key={idx} className="flex flex-col sm:flex-row gap-3 items-start sm:items-end mb-3 p-3 border border-gray-600 rounded bg-gray-800">
+        <div
+          key={idx}
+          className="flex flex-col sm:flex-row gap-3 items-start sm:items-end mb-3 p-3 border border-gray-600 rounded bg-gray-800"
+        >
           <div className="flex items-center gap-2">
             <input
               type="number"
@@ -447,7 +475,9 @@ function CircuitFields({
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-300 mb-1">Rest Between Exercises (sec)</label>
+          <label className="block text-sm text-gray-300 mb-1">
+            Rest Between Exercises (sec)
+          </label>
           <input
             type="number"
             value={ex.restBetweenExercises}
@@ -459,7 +489,9 @@ function CircuitFields({
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-300 mb-1">Rest Between Rounds (sec)</label>
+          <label className="block text-sm text-gray-300 mb-1">
+            Rest Between Rounds (sec)
+          </label>
           <input
             type="number"
             value={ex.restBetweenRounds}
@@ -471,7 +503,9 @@ function CircuitFields({
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-300 mb-1">Rest After Exercise (sec)</label>
+          <label className="block text-sm text-gray-300 mb-1">
+            Rest After Exercise (sec)
+          </label>
           <input
             type="number"
             value={ex.restAfterExercise}
@@ -487,7 +521,10 @@ function CircuitFields({
       <div>
         <p className="font-medium text-white mb-3">Circuit Exercises</p>
         {ex.exercises.map((ce, idx) => (
-          <div key={idx} className="border border-gray-600 p-4 mb-4 rounded bg-gray-900 shadow-sm">
+          <div
+            key={idx}
+            className="border border-gray-600 p-4 mb-4 rounded bg-gray-900 shadow-sm"
+          >
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-3">
               <input
                 type="text"
@@ -540,7 +577,12 @@ function CircuitFields({
             </Button>
           </div>
         ))}
-        <Button size="sm" variant="primary" onClick={addNestedExercise} className="w-full sm:w-auto">
+        <Button
+          size="sm"
+          variant="primary"
+          onClick={addNestedExercise}
+          className="w-full sm:w-auto"
+        >
           + Add Circuit Exercise
         </Button>
       </div>

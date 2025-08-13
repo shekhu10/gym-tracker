@@ -145,9 +145,7 @@ function ExerciseDisplay({ exercise }: { exercise: Exercise }) {
               key={idx}
               className="bg-black p-3 rounded border border-gray-600"
             >
-              <h4 className="font-medium mb-2 text-white">
-                {singleEx.name}
-              </h4>
+              <h4 className="font-medium mb-2 text-white">{singleEx.name}</h4>
               <SetsTable sets={singleEx.sets} />
             </div>
           ))}
@@ -158,9 +156,7 @@ function ExerciseDisplay({ exercise }: { exercise: Exercise }) {
 
   return (
     <div className="border border-gray-600 p-3 rounded mb-4 bg-gray-900">
-              <h3 className="font-medium mb-2 text-white">
-          {exercise.name}
-        </h3>
+      <h3 className="font-medium mb-2 text-white">{exercise.name}</h3>
       <SetsTable sets={exercise.sets} />
     </div>
   );
@@ -169,14 +165,14 @@ function ExerciseDisplay({ exercise }: { exercise: Exercise }) {
 function SetsTable({ sets }: { sets: SetItem[] }) {
   return (
     <table className="text-sm w-full">
-              <thead>
-          <tr className="text-left border-b border-gray-600">
-            <th className="pr-2 py-1 text-gray-300">Set</th>
-            <th className="pr-2 py-1 text-gray-300">Type</th>
-            <th className="pr-2 py-1 text-gray-300">Reps</th>
-            <th className="pr-2 py-1 text-gray-300">Weight</th>
-          </tr>
-        </thead>
+      <thead>
+        <tr className="text-left border-b border-gray-600">
+          <th className="pr-2 py-1 text-gray-300">Set</th>
+          <th className="pr-2 py-1 text-gray-300">Type</th>
+          <th className="pr-2 py-1 text-gray-300">Reps</th>
+          <th className="pr-2 py-1 text-gray-300">Weight</th>
+        </tr>
+      </thead>
       <tbody>
         {sets.map((set, idx) => {
           if (set.type === "strip") {
