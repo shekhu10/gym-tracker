@@ -539,37 +539,20 @@ function SetLogEditor({
           <span className="font-medium text-orange-300">
             Set {setNumber} - Strip Set
           </span>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-400">
-              {set.actualSets.filter(s => s.reps && s.reps > 0 && s.weight && s.weight > 0).length} of {set.actualSets.length} strips valid
-            </span>
-            <button
-              onClick={() => onChange({ ...set, completed: !set.completed })}
-              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                set.completed
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-600 text-gray-300 hover:bg-gray-500"
-              }`}
-            >
-              {set.completed ? "✓ Complete" : "Complete"}
-            </button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onRemove}
-              className="text-red-600"
-            >
-              Remove
-            </Button>
-          </div>
+                      <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-400">
+                {set.actualSets.filter(s => s.reps && s.reps > 0 && s.weight && s.weight > 0).length} of {set.actualSets.length} strips valid
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onRemove}
+                className="text-red-600"
+              >
+                Remove
+              </Button>
+            </div>
         </div>
-
-        {/* Warning if no valid sets */}
-        {!set.actualSets.some(s => s.reps && s.reps > 0 && s.weight && s.weight > 0) && (
-          <div className="text-xs text-red-400 bg-red-50 p-2 rounded mb-2">
-            ⚠ Warning: This strip set has no valid sets and won't be saved
-          </div>
-        )}
         
         <div className="space-y-1">
           {set.actualSets.map((actualSet, index) => (
@@ -637,7 +620,7 @@ function SetLogEditor({
               {actualSet.reps && actualSet.reps > 0 && actualSet.weight && actualSet.weight > 0 ? (
                 <div className="text-xs text-green-400">✓ Will be saved</div>
               ) : (
-                <div className="text-xs text-yellow-400">⚠ Won't be saved (0 reps/weight)</div>
+                <div className="text-xs text-yellow-400">⚠ Incomplete - won't be saved</div>
               )}
 
               {/* Show set source indicator for strip sets */}
@@ -650,24 +633,6 @@ function SetLogEditor({
               {!planSet && !previousWeekSet && !set.lastWeekData && (
                 <div className="text-xs text-gray-500">Extra set</div>
               )}
-
-              <button
-                onClick={() => {
-                  const newActualSets = [...set.actualSets];
-                  newActualSets[index] = {
-                    ...actualSet,
-                    completed: !actualSet.completed,
-                  };
-                  onChange({ ...set, actualSets: newActualSets });
-                }}
-                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                  actualSet.completed
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-600 text-gray-300 hover:bg-gray-500"
-                }`}
-              >
-                {actualSet.completed ? "✓" : "Complete"}
-              </button>
             </div>
           ))}
         </div>
@@ -754,16 +719,6 @@ function SetLogEditor({
       </div>
 
       <div className="flex items-center gap-2 ml-auto w-full sm:w-auto justify-end sm:justify-start">
-        <button
-          onClick={() => onChange({ ...set, completed: !set.completed })}
-          className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-            set.completed
-              ? "bg-green-600 text-white"
-              : "bg-gray-600 text-gray-300 hover:bg-gray-500"
-          }`}
-        >
-          {set.completed ? "✓" : "Complete"}
-        </button>
         <Button
           variant="secondary"
           size="sm"
