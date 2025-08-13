@@ -63,8 +63,10 @@ export default function LogDetailPage() {
   useEffect(() => {
     (async () => {
       const res = await fetch(`/api/users/${userId}/logs/${logId}`);
-      if (res.ok) setLog(await res.json());
-      else {
+      if (res.ok) {
+        const data = await res.json();
+        setLog(data);
+      } else {
         const e = await res.json();
         setError(e.error || "Error loading log");
       }
@@ -193,10 +195,10 @@ function SetsTable({ sets }: { sets: SetItem[] }) {
                 <td className="pr-2 py-1 text-gray-200">{idx + 1}</td>
                 <td className="pr-2 py-1 text-orange-400">Strip Set</td>
                 <td className="pr-2 py-1 text-gray-200">
-                  {set.stripSets.map((s) => s.reps).join(", ")}
+                  {set.actualSets ? set.actualSets.map((s) => s.reps).join(", ") : set.stripSets.map((s) => s.reps).join(", ")}
                 </td>
                 <td className="pr-2 py-1 text-gray-200">
-                  {set.stripSets.map((s) => s.weight).join(", ")}
+                  {set.actualSets ? set.actualSets.map((s) => s.weight).join(", ") : set.stripSets.map((s) => s.weight).join(", ")}
                 </td>
                 <td className="py-1">
                   {set.completed ? (
