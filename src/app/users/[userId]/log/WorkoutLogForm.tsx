@@ -15,13 +15,11 @@ import {
 
 // Log-specific types that extend the plan types
 export interface LogSet extends NormalSet {
-  completed?: boolean;
   lastWeekData?: any; // Store last week's data for display
 }
 
 export interface LogStripSet extends StripSet {
   actualSets: LogSet[];
-  completed?: boolean;
   lastWeekData?: any; // Store last week's data for display
 }
 
@@ -35,7 +33,6 @@ export interface LogSingleExercise {
   sets: LogSetItem[];
   actualRestBetweenSets?: number;
   actualRestAfterExercise?: number;
-  completed?: boolean;
 }
 
 export interface LogCircuitExercise {
@@ -48,7 +45,6 @@ export interface LogCircuitExercise {
   exercises: LogSingleExercise[];
   actualRestBetweenRounds?: number;
   actualRestAfterCircuit?: number;
-  completed?: boolean;
 }
 
 export type LogExercise = LogSingleExercise | LogCircuitExercise;
@@ -406,7 +402,7 @@ function SingleExerciseLogEditor({
   };
 
   const addSet = () => {
-    const newSet: LogSet = { reps: 0, weight: 0, completed: false };
+    const newSet: LogSet = { reps: 0, weight: 0 };
     updateExercise({ sets: [...exercise.sets, newSet] });
   };
 
@@ -688,7 +684,7 @@ function SetLogEditor({
           onClick={() => {
             const newActualSets = [
               ...set.actualSets,
-              { reps: 0, weight: 0, completed: false },
+              { reps: 0, weight: 0 },
             ];
             onChange({ ...set, actualSets: newActualSets });
           }}

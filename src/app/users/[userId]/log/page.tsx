@@ -107,14 +107,17 @@ export default function WorkoutLogPage() {
                             const stripSet = targetSet as unknown as StripSet;
                             // Check if there's last week data for this position
                             const lastWeekSet = lastWeekSingleEx?.sets?.[i];
+                            // Determine max strips between target and last week
+                            const targetStrips = stripSet.stripSets.length;
+                            const lastWeekStrips = lastWeekSet?.actualSets?.length || lastWeekSet?.stripSets?.length || 0;
+                            const maxStrips = Math.max(targetStrips, lastWeekStrips);
+                            
                             sets.push({
                               ...stripSet,
-                              actualSets: stripSet.stripSets.map((s: any) => ({
+                              actualSets: Array.from({ length: maxStrips }, () => ({
                                 reps: 0,
                                 weight: 0,
-                                completed: false,
                               })),
-                              completed: false,
                               // Include last week data if available
                               lastWeekData: lastWeekSet || undefined,
                             });
@@ -123,7 +126,6 @@ export default function WorkoutLogPage() {
                               ...targetSet,
                               reps: 0,
                               weight: 0,
-                              completed: false,
                             });
                           }
                         } else {
@@ -141,9 +143,7 @@ export default function WorkoutLogPage() {
                                 ).map((s: any) => ({
                                   reps: 0,
                                   weight: 0,
-                                  completed: false,
                                 })),
-                                completed: false,
                                 // Preserve last week's data for display
                                 lastWeekData: lastWeekSet,
                               });
@@ -152,7 +152,6 @@ export default function WorkoutLogPage() {
                                 ...lastWeekSet,
                                 reps: 0,
                                 weight: 0,
-                                completed: false,
                                 // Preserve last week's data for display
                                 lastWeekData: lastWeekSet,
                               });
@@ -162,7 +161,6 @@ export default function WorkoutLogPage() {
                             sets.push({
                               reps: 0,
                               weight: 0,
-                              completed: false,
                             });
                           }
                         }
@@ -174,11 +172,9 @@ export default function WorkoutLogPage() {
                         restBetweenSets: 0,
                         restAfterExercise: 0,
                         sets,
-                        completed: false,
                       };
                     },
                   ),
-                  completed: false,
                 };
               } else {
                 // Single exercise
@@ -199,14 +195,17 @@ export default function WorkoutLogPage() {
                       const stripSet = targetSet as unknown as StripSet;
                       // Check if there's last week data for this position
                       const lastWeekSet = lastWeekEx?.sets?.[i];
+                      // Determine max strips between target and last week
+                      const targetStrips = stripSet.stripSets.length;
+                      const lastWeekStrips = lastWeekSet?.actualSets?.length || lastWeekSet?.stripSets?.length || 0;
+                      const maxStrips = Math.max(targetStrips, lastWeekStrips);
+                      
                       sets.push({
                         ...stripSet,
-                        actualSets: stripSet.stripSets.map((s: any) => ({
+                        actualSets: Array.from({ length: maxStrips }, () => ({
                           reps: 0,
                           weight: 0,
-                          completed: false,
                         })),
-                        completed: false,
                         // Include last week data if available
                         lastWeekData: lastWeekSet || undefined,
                       });
@@ -215,7 +214,6 @@ export default function WorkoutLogPage() {
                         ...targetSet,
                         reps: 0,
                         weight: 0,
-                        completed: false,
                       });
                     }
                   } else {
@@ -233,9 +231,7 @@ export default function WorkoutLogPage() {
                           ).map((s: any) => ({
                             reps: 0,
                             weight: 0,
-                            completed: false,
                           })),
-                          completed: false,
                           // Preserve last week's data for display
                           lastWeekData: lastWeekSet,
                         });
@@ -244,7 +240,6 @@ export default function WorkoutLogPage() {
                           ...lastWeekSet,
                           reps: 0,
                           weight: 0,
-                          completed: false,
                           // Preserve last week's data for display
                           lastWeekData: lastWeekSet,
                         });
@@ -254,7 +249,6 @@ export default function WorkoutLogPage() {
                       sets.push({
                         reps: 0,
                         weight: 0,
-                        completed: false,
                       });
                     }
                   }
@@ -266,7 +260,6 @@ export default function WorkoutLogPage() {
                   restBetweenSets: exercise.restBetweenSets,
                   restAfterExercise: exercise.restAfterExercise,
                   sets,
-                  completed: false,
                 };
               }
             },

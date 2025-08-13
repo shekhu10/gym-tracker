@@ -6,14 +6,12 @@ interface SetLog {
   reps: number | "";
   weight: number | "";
   type?: "warmup" | "normal";
-  completed?: boolean;
 }
 
 interface StripSet {
   type: "strip";
   stripSets: { reps: number; weight: number }[];
   actualSets?: SetLog[];
-  completed?: boolean;
 }
 
 type SetItem = SetLog | StripSet;
@@ -24,7 +22,6 @@ interface SingleExercise {
   sets: SetItem[];
   restBetweenSets?: number;
   restAfterExercise?: number;
-  completed?: boolean;
 }
 
 interface CircuitExercise {
@@ -35,7 +32,6 @@ interface CircuitExercise {
   restBetweenExercises?: number;
   restBetweenRounds?: number;
   restAfterExercise?: number;
-  completed?: boolean;
 }
 
 type Exercise = SingleExercise | CircuitExercise;
@@ -142,7 +138,6 @@ function ExerciseDisplay({ exercise }: { exercise: Exercise }) {
       <div className="border border-blue-400 p-4 rounded mb-4 bg-gray-900">
         <h3 className="font-medium mb-2 text-blue-300">
           Circuit: {exercise.name} ({exercise.rounds} rounds)
-          {exercise.completed && <span className="ml-2 text-green-400">✓</span>}
         </h3>
         <div className="space-y-3">
           {exercise.exercises.map((singleEx, idx) => (
@@ -152,9 +147,6 @@ function ExerciseDisplay({ exercise }: { exercise: Exercise }) {
             >
               <h4 className="font-medium mb-2 text-white">
                 {singleEx.name}
-                {singleEx.completed && (
-                  <span className="ml-2 text-green-400">✓</span>
-                )}
               </h4>
               <SetsTable sets={singleEx.sets} />
             </div>
@@ -166,10 +158,9 @@ function ExerciseDisplay({ exercise }: { exercise: Exercise }) {
 
   return (
     <div className="border border-gray-600 p-3 rounded mb-4 bg-gray-900">
-      <h3 className="font-medium mb-2 text-white">
-        {exercise.name}
-        {exercise.completed && <span className="ml-2 text-green-400">✓</span>}
-      </h3>
+              <h3 className="font-medium mb-2 text-white">
+          {exercise.name}
+        </h3>
       <SetsTable sets={exercise.sets} />
     </div>
   );
@@ -178,15 +169,14 @@ function ExerciseDisplay({ exercise }: { exercise: Exercise }) {
 function SetsTable({ sets }: { sets: SetItem[] }) {
   return (
     <table className="text-sm w-full">
-      <thead>
-        <tr className="text-left border-b border-gray-600">
-          <th className="pr-2 py-1 text-gray-300">Set</th>
-          <th className="pr-2 py-1 text-gray-300">Type</th>
-          <th className="pr-2 py-1 text-gray-300">Reps</th>
-          <th className="pr-2 py-1 text-gray-300">Weight</th>
-          <th className="py-1 text-gray-300">Status</th>
-        </tr>
-      </thead>
+              <thead>
+          <tr className="text-left border-b border-gray-600">
+            <th className="pr-2 py-1 text-gray-300">Set</th>
+            <th className="pr-2 py-1 text-gray-300">Type</th>
+            <th className="pr-2 py-1 text-gray-300">Reps</th>
+            <th className="pr-2 py-1 text-gray-300">Weight</th>
+          </tr>
+        </thead>
       <tbody>
         {sets.map((set, idx) => {
           if (set.type === "strip") {
@@ -204,13 +194,6 @@ function SetsTable({ sets }: { sets: SetItem[] }) {
                     ? set.actualSets.map((s) => s.weight).join(", ")
                     : set.stripSets.map((s) => s.weight).join(", ")}
                 </td>
-                <td className="py-1">
-                  {set.completed ? (
-                    <span className="text-green-400">✓</span>
-                  ) : (
-                    <span className="text-gray-500">-</span>
-                  )}
-                </td>
               </tr>
             );
           }
@@ -227,13 +210,6 @@ function SetsTable({ sets }: { sets: SetItem[] }) {
               </td>
               <td className="pr-2 py-1 text-gray-200">{set.reps}</td>
               <td className="pr-2 py-1 text-gray-200">{set.weight}</td>
-              <td className="py-1">
-                {set.completed ? (
-                  <span className="text-green-400">✓</span>
-                ) : (
-                  <span className="text-gray-500">-</span>
-                )}
-              </td>
             </tr>
           );
         })}
