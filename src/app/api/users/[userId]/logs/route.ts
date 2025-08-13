@@ -99,9 +99,10 @@ export async function POST(req: NextRequest, { params }: any) {
   // Determine log date (defaults to today)
   let logDate: Date;
   if (date) {
-    // Create date in UTC to avoid timezone issues
+    // Create date in local timezone to avoid timezone issues
     // This ensures the selected date remains the same regardless of server timezone
-    logDate = new Date(date + "T12:00:00.000Z");
+    const [year, month, day] = date.split('-').map(Number);
+    logDate = new Date(year, month - 1, day); // month is 0-indexed
     if (isNaN(logDate.getTime())) {
       return NextResponse.json(
         { error: "Invalid date format, expected YYYY-MM-DD" },

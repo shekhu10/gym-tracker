@@ -261,11 +261,12 @@ export const workoutLogDb = {
     dayName: string,
     currentDate: string,
   ) {
-    // Calculate date 7 days back
-    const currentDateObj = new Date(currentDate);
+    // Calculate date 7 days back in local timezone
+    const [year, month, day] = currentDate.split('-').map(Number);
+    const currentDateObj = new Date(year, month - 1, day); // month is 0-indexed
     const previousWeekDate = new Date(currentDateObj);
     previousWeekDate.setDate(currentDateObj.getDate() - 7);
-    const previousWeekDateStr = previousWeekDate.toISOString().split("T")[0];
+    const previousWeekDateStr = previousWeekDate.toLocaleDateString('en-CA'); // Returns YYYY-MM-DD
 
     const result = await sql`
       SELECT id, "userId", date, "dayName", 
