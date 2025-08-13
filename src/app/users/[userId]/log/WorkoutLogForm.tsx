@@ -73,6 +73,10 @@ export function WorkoutLogForm({ log, plan, previousWeekLog, onChange, onSave }:
   };
 
   const isLastExercise = currentExerciseIdx === log.exercises.length - 1;
+  
+  // Calculate progress
+  const completedExercises = log.exercises.filter(ex => ex.completed).length;
+  const progressPercentage = log.exercises.length > 0 ? (completedExercises / log.exercises.length) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -89,8 +93,41 @@ export function WorkoutLogForm({ log, plan, previousWeekLog, onChange, onSave }:
           />
         </div>
         
-
+        {/* Progress indicator */}
+        <div className="mt-4">
+          <div className="flex justify-between text-sm text-gray-300 mb-2">
+            <span>Progress: {completedExercises} of {log.exercises.length} exercises completed</span>
+            <span>{Math.round(progressPercentage)}%</span>
+          </div>
+          <div className="w-full bg-gray-700 rounded-full h-2">
+            <div 
+              className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+              style={{ width: `${progressPercentage}%` }}
+            ></div>
+          </div>
+        </div>
       </div>
+
+      {/* Exercise navigation tabs */}
+      {log.exercises.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {log.exercises.map((exercise, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentExerciseIdx(index)}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                index === currentExerciseIdx
+                  ? 'bg-blue-600 text-white'
+                  : exercise.completed
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              {index + 1}. {exercise.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Exercises */}
       <div className="space-y-4">
@@ -116,7 +153,7 @@ export function WorkoutLogForm({ log, plan, previousWeekLog, onChange, onSave }:
               onClick={() => setCurrentExerciseIdx((idx) => Math.max(0, idx - 1))}
               disabled={currentExerciseIdx === 0}
             >
-              Prev
+              Previous
             </Button>
             {!isLastExercise ? (
               <Button
@@ -124,11 +161,11 @@ export function WorkoutLogForm({ log, plan, previousWeekLog, onChange, onSave }:
                 size="sm"
                 onClick={() => setCurrentExerciseIdx((idx) => Math.min(log.exercises.length - 1, idx + 1))}
               >
-                Next
+                Next Exercise
               </Button>
             ) : (
               <Button variant="primary" size="sm" onClick={onSave}>
-                Save Log
+                Save Workout Log
               </Button>
             )}
           </div>
@@ -157,8 +194,18 @@ function ExerciseLogEditor({ exercise, planExercise, previousWeekExercise, onCha
   if (exercise.type === "circuit") {
     return (
       <div className="border border-blue-400 rounded-lg p-4 bg-black shadow-sm">
-        <div className="mb-3">
+        <div className="mb-3 flex justify-between items-center">
           <h4 className="font-semibold text-blue-300">Circuit: {exercise.name}</h4>
+          <button
+            onClick={toggleCompleted}
+            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              exercise.completed
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+            }`}
+          >
+            {exercise.completed ? '✓ Completed' : 'Mark Complete'}
+          </button>
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
@@ -170,8 +217,8 @@ function ExerciseLogEditor({ exercise, planExercise, previousWeekExercise, onCha
             <span className="text-gray-300">Rest Between Rounds: </span>
             <input
               type="number"
-              value={exercise.actualRestBetweenRounds || exercise.restBetweenRounds || ""}
-              onChange={(e) => updateExercise({ actualRestBetweenRounds: Number(e.target.value) })}
+              value={exercise.actualRestBetweenRounds || ""}
+              onChange={(e) => updateExercise({ actualRestBetweenRounds: Number(e.target.value) || 0 })}
               className="w-16 border rounded px-1"
               placeholder={exercise.restBetweenRounds?.toString()}
             />
@@ -184,12 +231,18 @@ function ExerciseLogEditor({ exercise, planExercise, previousWeekExercise, onCha
             <SingleExerciseLogEditor
               key={index}
               exercise={singleEx}
-              planExercise={planExercise?.type === "circuit" ? planExercise.exercises[index] : undefined}
+              planExercise={planExercise?.type === "circuit" ? {
+                type: "single" as const,
+                name: planExercise.exercises[index]?.name || "",
+                restBetweenSets: "",
+                restAfterExercise: "",
+                sets: planExercise.exercises[index]?.sets || []
+              } : undefined}
               previousWeekExercise={previousWeekExercise?.exercises?.[index]}
               onChange={(updated) => {
                 const newExercises = [...exercise.exercises];
                 newExercises[index] = updated;
-                updateExercise({ exercises: newExercises });
+                updateExercise({ ...exercise, exercises: newExercises });
               }}
               isInCircuit={true}
             />
@@ -243,8 +296,20 @@ function SingleExerciseLogEditor({ exercise, planExercise, previousWeekExercise,
 
   return (
     <div className={`border rounded-lg p-4 ${bgColor} ${borderColor}`}>
-      <div className="mb-3">
+      <div className="mb-3 flex justify-between items-center">
         <h4 className="font-semibold text-white">{exercise.name}</h4>
+        {!isInCircuit && (
+          <button
+            onClick={() => updateExercise({ completed: !exercise.completed })}
+            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              exercise.completed
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+            }`}
+          >
+            {exercise.completed ? '✓ Completed' : 'Mark Complete'}
+          </button>
+        )}
       </div>
 
       {!isInCircuit && (
@@ -306,6 +371,16 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
         <div className="flex items-center justify-between mb-2">
           <span className="font-medium text-orange-300">Set {setNumber} - Strip Set</span>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => onChange({ ...set, completed: !set.completed })}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                set.completed
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+              }`}
+            >
+              {set.completed ? '✓ Complete' : 'Complete'}
+            </button>
             <Button variant="secondary" size="sm" onClick={onRemove} className="text-red-600">
               Remove
             </Button>
@@ -318,10 +393,10 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
               <span className="text-sm w-8">{index + 1}:</span>
               <input
                 type="number"
-                defaultValue={""}
+                value={actualSet.reps || ""}
                 onChange={(e) => {
                   const newActualSets = [...set.actualSets];
-                  newActualSets[index] = { ...actualSet, reps: Number(e.target.value) };
+                  newActualSets[index] = { ...actualSet, reps: Number(e.target.value) || 0 };
                   onChange({ ...set, actualSets: newActualSets });
                 }}
                 className="w-16 border rounded px-1"
@@ -330,16 +405,29 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
               <span className="text-sm">×</span>
               <input
                 type="number"
-                defaultValue={""}
+                value={actualSet.weight || ""}
                 onChange={(e) => {
                   const newActualSets = [...set.actualSets];
-                  newActualSets[index] = { ...actualSet, weight: Number(e.target.value) };
+                  newActualSets[index] = { ...actualSet, weight: Number(e.target.value) || 0 };
                   onChange({ ...set, actualSets: newActualSets });
                 }}
                 className="w-20 border border-gray-600 rounded px-1 bg-gray-800 text-white"
                 placeholder="Weight"
               />
-
+              <button
+                onClick={() => {
+                  const newActualSets = [...set.actualSets];
+                  newActualSets[index] = { ...actualSet, completed: !actualSet.completed };
+                  onChange({ ...set, actualSets: newActualSets });
+                }}
+                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                  actualSet.completed
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                }`}
+              >
+                {actualSet.completed ? '✓' : 'Complete'}
+              </button>
             </div>
           ))}
         </div>
@@ -365,16 +453,16 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
       <span className="text-sm font-medium w-12 text-white">Set {setNumber}</span>
       <input
         type="number"
-        defaultValue={""}
-        onChange={(e) => onChange({ ...set, reps: Number(e.target.value) })}
+        value={set.reps || ""}
+        onChange={(e) => onChange({ ...set, reps: Number(e.target.value) || 0 })}
         className="w-16 border border-gray-600 rounded px-2 py-1 bg-gray-800 text-white"
         placeholder="Reps"
       />
       <span className="text-sm">×</span>
       <input
         type="number"
-        defaultValue={""}
-        onChange={(e) => onChange({ ...set, weight: Number(e.target.value) })}
+        value={set.weight || ""}
+        onChange={(e) => onChange({ ...set, weight: Number(e.target.value) || 0 })}
         className="w-20 border border-gray-600 rounded px-2 py-1 bg-gray-800 text-white"
         placeholder="Weight"
       />
@@ -393,6 +481,16 @@ function SetLogEditor({ set, planSet, previousWeekSet, onChange, onRemove, setNu
       </div>
       
       <div className="flex items-center gap-2 ml-auto">
+        <button
+          onClick={() => onChange({ ...set, completed: !set.completed })}
+          className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+            set.completed
+              ? 'bg-green-600 text-white'
+              : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+          }`}
+        >
+          {set.completed ? '✓' : 'Complete'}
+        </button>
         <Button variant="secondary" size="sm" onClick={onRemove} className="text-red-600">
           Remove
         </Button>
