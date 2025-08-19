@@ -92,13 +92,7 @@ export default function LogDetailPage() {
       </button>
       <h1 className="text-2xl font-bold mb-2 text-white">{log.planName}</h1>
       <p className="mb-4 text-gray-300">
-        {new Date(log.date).toLocaleDateString("en-US", {
-          weekday: "long",
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })}
-        {` (${log.dayName})`}
+        {formatDateLong(log.date)}{` (${log.dayName})`}
       </p>
 
       {/* Workout timing and notes */}
@@ -132,6 +126,16 @@ export default function LogDetailPage() {
   );
 }
 
+function formatDateLong(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const local = new Date(y, (m || 1) - 1, d || 1);
+  return local.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
 function ExerciseDisplay({ exercise }: { exercise: Exercise }) {
   if (exercise.type === "circuit") {
     return (

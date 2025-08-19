@@ -60,10 +60,9 @@ export default function HistoryPage() {
     }
   };
 
-  // group logs by YYYY-MM-DD
+  // group logs by YYYY-MM-DD (date is already normalized by API)
   const grouped = logs.reduce<Record<string, WorkoutLog[]>>((acc, log) => {
-    const d = new Date(log.date);
-    const key = d.toISOString().slice(0, 10);
+    const key = log.date;
     (acc[key] = acc[key] || []).push(log);
     return acc;
   }, {});
@@ -129,8 +128,10 @@ export default function HistoryPage() {
 }
 
 function formatDate(iso: string): string {
-  const d = new Date(iso);
-  const weekday = d.toLocaleDateString("en-US", { weekday: "long" });
+  // Build a local Date from components to avoid UTC parsing shifting the day
+  const [y, m, d] = iso.split("-").map(Number);
+  const local = new Date(y, (m || 1) - 1, d || 1);
+  const weekday = local.toLocaleDateString("en-US", { weekday: "long" });
   return `${weekday}, ${iso}`; // e.g. Monday, 2025-08-03
 }
 

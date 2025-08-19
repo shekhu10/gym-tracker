@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import {
   WorkoutLogForm,
@@ -44,6 +44,7 @@ const emptyLog: WorkoutLog = {
 
 export default function WorkoutLogPage() {
   const { userId } = useParams<{ userId: string }>();
+  const router = useRouter();
   const [currentLog, setCurrentLog] = useState<WorkoutLog>(emptyLog);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [previousWeekLog, setPreviousWeekLog] = useState<any>(null);
@@ -397,10 +398,11 @@ export default function WorkoutLogPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(filteredLog),
       });
-
-      setMessage(
-        res.ok ? "Workout logged successfully!" : "Error saving workout log",
-      );
+      if (res.ok) {
+        router.push(`/users/${userId}/log/success`);
+        return;
+      }
+      setMessage("Error saving workout log");
     } catch (error) {
       setMessage("Error saving workout log");
     } finally {

@@ -16,6 +16,20 @@ const sql = postgres(process.env.DATABASE_URL!, {
   connect_timeout: 10, // Connection timeout in seconds
 });
 
+// Normalize a JS Date (or date-like) to a YYYY-MM-DD string with no time
+function toIsoDateString(dateValue: unknown): string | null {
+  if (!dateValue) return null;
+  // If it's already a YYYY-MM-DD string (from DATE column), return as-is
+  if (typeof dateValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    return dateValue;
+  }
+  const d = dateValue instanceof Date ? dateValue : new Date(dateValue as any);
+  if (isNaN(d.getTime())) return null;
+  // Use calendar date in server's local timezone to avoid timezone shifts
+  // and output as ISO date (YYYY-MM-DD)
+  return d.toLocaleDateString("en-CA");
+}
+
 // User-related database operations
 export const userDb = {
   // Get all users
@@ -156,9 +170,10 @@ export const workoutLogDb = {
       `;
     }
 
-    // Parse JSON entries if they are strings
+    // Parse JSON entries and normalize date to YYYY-MM-DD
     return results.map((log) => ({
       ...log,
+      date: toIsoDateString(log.date),
       entries:
         typeof log.entries === "string" ? JSON.parse(log.entries) : log.entries,
     }));
@@ -174,9 +189,10 @@ export const workoutLogDb = {
     `;
     const log = result[0] || null;
     if (log) {
-      // Parse JSON entries if they are strings
+      // Parse JSON entries and normalize date
       log.entries =
         typeof log.entries === "string" ? JSON.parse(log.entries) : log.entries;
+      log.date = toIsoDateString(log.date);
     }
     return log;
   },
@@ -187,19 +203,25 @@ export const workoutLogDb = {
     dayName: string,
     planName: string,
     entries: any,
-    logDate?: Date,
+    logDate?: string | Date,
   ) {
+    const dateParam =
+      typeof logDate === "string"
+        ? logDate
+        : toIsoDateString(logDate) || new Date().toLocaleDateString("en-CA");
+
     const result = await sql`
       INSERT INTO "WorkoutLog" ("userId", "dayName", "planName", entries, date)
-      VALUES (${userId}, ${dayName}, ${planName}, ${JSON.stringify(entries)}, ${logDate || new Date()})
+      VALUES (${userId}, ${dayName}, ${planName}, ${JSON.stringify(entries)}, ${dateParam})
       RETURNING id, "userId", date, "dayName", 
                 "planName", entries, "createdAt"
     `;
     const log = result[0];
     if (log) {
-      // Parse JSON entries if they are strings
+      // Parse JSON entries and normalize date
       log.entries =
         typeof log.entries === "string" ? JSON.parse(log.entries) : log.entries;
+      log.date = toIsoDateString(log.date);
     }
     return log;
   },
@@ -238,9 +260,10 @@ export const workoutLogDb = {
     `;
     const log = result[0] || null;
     if (log) {
-      // Parse JSON entries if they are strings
+      // Parse JSON entries and normalize date
       log.entries =
         typeof log.entries === "string" ? JSON.parse(log.entries) : log.entries;
+      log.date = toIsoDateString(log.date);
     }
     return log;
   },
@@ -274,15 +297,16 @@ export const workoutLogDb = {
       FROM "WorkoutLog"
       WHERE "userId" = ${userId} 
         AND "dayName" = ${dayName}
-        AND DATE(date) = ${previousWeekDateStr}
+        AND date = ${previousWeekDateStr}
       ORDER BY "createdAt" ASC
       LIMIT 1
     `;
     const log = result[0] || null;
     if (log) {
-      // Parse JSON entries if they are strings
+      // Parse JSON entries and normalize date
       log.entries =
         typeof log.entries === "string" ? JSON.parse(log.entries) : log.entries;
+      log.date = toIsoDateString(log.date);
     }
     return log;
   },
