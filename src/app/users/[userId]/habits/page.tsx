@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { userDb } from "@/lib/db";
+import HabitsClient from "./HabitsClient";
 
 interface Props {
   params: { userId: string };
@@ -52,6 +53,11 @@ export default async function HabitsPage({ params }: Props) {
           <h2 className="card-title mb-2 text-white">History</h2>
           <p className="text-gray-300">View habit logs</p>
         </Link>
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-white">All Habits</h2>
+        <HabitsClient userId={user.id} />
       </div>
     </main>
   );
