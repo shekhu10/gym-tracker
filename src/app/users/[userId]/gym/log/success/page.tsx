@@ -16,13 +16,13 @@ export default function LogSuccessPage() {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
-            onClick={() => router.push(`/users/${userId}/history`)}
+            onClick={() => router.push(`/users/${userId}/gym/history`)}
             className="px-4 py-2 rounded bg-green-600 hover:bg-green-500 text-white"
           >
             View History
           </button>
           <button
-            onClick={() => router.push(`/users/${userId}/log`)}
+            onClick={() => router.push(`/users/${userId}/gym/log`)}
             className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white"
           >
             Log Another Workout
