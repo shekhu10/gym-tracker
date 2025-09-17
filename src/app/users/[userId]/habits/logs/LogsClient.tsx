@@ -42,9 +42,14 @@ export default function LogsClient({
   const [quantity, setQuantity] = useState<string>("");
   const [unit, setUnit] = useState<string>("binary");
   const [durationSeconds, setDurationSeconds] = useState<string>("");
-  const [occurredAt, setOccurredAt] = useState<string>(
-    new Date().toISOString(),
-  );
+  const [occurredAt, setOccurredAt] = useState<string>(() => {
+    // Get current local date in YYYY-MM-DD format
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  });
   const [note, setNote] = useState<string>("");
 
   async function fetchLogs() {
@@ -65,9 +70,9 @@ export default function LogsClient({
 
   async function fetchDueTasks() {
     try {
-      const dateOnly = new Date(occurredAt).toISOString().split('T')[0];
+      // occurredAt is already in YYYY-MM-DD format, so use it directly
       const res = await fetch(
-        `/api/users/${userId}/habits?asOf=${dateOnly}`,
+        `/api/users/${userId}/habits?asOf=${occurredAt}`,
       );
       const data = await res.json();
       setAvailableTasks(data);
@@ -91,6 +96,9 @@ export default function LogsClient({
 
   async function createLog() {
     try {
+      // Convert date-only format to ISO string for the API
+      const occurredAtISO = new Date(occurredAt + 'T00:00:00').toISOString();
+      
       const res = await fetch(`/api/users/${userId}/habits/logs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -100,7 +108,7 @@ export default function LogsClient({
           quantity: quantity ? Number(quantity) : null,
           unit: unit || null,
           durationSeconds: durationSeconds ? Number(durationSeconds) : null,
-          occurredAt,
+          occurredAt: occurredAtISO,
           tz:
             Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Kolkata",
           source: "manual",
@@ -175,11 +183,9 @@ export default function LogsClient({
             </label>
             <input
               className="w-full border rounded p-2"
-              type="datetime-local"
-              value={occurredAt.slice(0, 16)}
-              onChange={(e) =>
-                setOccurredAt(new Date(e.target.value).toISOString())
-              }
+              type="date"
+              value={occurredAt}
+              onChange={(e) => setOccurredAt(e.target.value)}
             />
           </div>
           <div>
