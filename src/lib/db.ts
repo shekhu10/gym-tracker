@@ -430,4 +430,109 @@ export const tasksDb = {
   },
 };
 
+// Task logs (habit logs)
+export const taskLogsDb = {
+  // List recent logs for a user (optionally filter by taskId)
+  async findMany(userId: number, taskId?: number, limit = 50) {
+    if (taskId) {
+      return await sql`
+        SELECT id,
+               userid          as "userId",
+               taskid          as "taskId",
+               status,
+               quantity,
+               unit,
+               durationseconds as "durationSeconds",
+               occurredat      as "occurredAt",
+               tz,
+               localdate       as "localDate",
+               source,
+               note,
+               metadata,
+               createdat       as "createdAt"
+        FROM task_logs
+        WHERE userid = ${userId} AND taskid = ${taskId}
+        ORDER BY occurredat DESC
+        LIMIT ${limit}
+      `;
+    }
+    return await sql`
+      SELECT id,
+             userid          as "userId",
+             taskid          as "taskId",
+             status,
+             quantity,
+             unit,
+             durationseconds as "durationSeconds",
+             occurredat      as "occurredAt",
+             tz,
+             localdate       as "localDate",
+             source,
+             note,
+             metadata,
+             createdat       as "createdAt"
+      FROM task_logs
+      WHERE userid = ${userId}
+      ORDER BY occurredat DESC
+      LIMIT ${limit}
+    `;
+  },
+
+  // Create a log entry
+  async create(userId: number, data: {
+    taskId: number;
+    status?: string;
+    quantity?: number | null;
+    unit?: string | null;
+    durationSeconds?: number | null;
+    occurredAt?: string | Date | null;
+    tz?: string | null;
+    source?: string | null;
+    note?: string | null;
+    metadata?: any;
+  }) {
+    const occurredAtParam = data.occurredAt
+      ? (typeof data.occurredAt === 'string' ? new Date(data.occurredAt).toISOString() : (data.occurredAt as Date).toISOString())
+      : new Date().toISOString();
+    const tzParam = data.tz ?? 'Asia/Kolkata';
+    const statusParam = data.status ?? 'completed';
+    const sourceParam = data.source ?? 'manual';
+
+    const result = await sql`
+      INSERT INTO task_logs (
+        userid, taskid, status, quantity, unit, durationseconds,
+        occurredat, tz, source, note, metadata
+      ) VALUES (
+        ${userId}, ${data.taskId}, ${statusParam}, ${data.quantity ?? null}, ${data.unit ?? null}, ${data.durationSeconds ?? null},
+        ${occurredAtParam}, ${tzParam}, ${sourceParam}, ${data.note ?? null}, ${JSON.stringify(data.metadata ?? {})}::jsonb
+      )
+      RETURNING id,
+                userid          as "userId",
+                taskid          as "taskId",
+                status,
+                quantity,
+                unit,
+                durationseconds as "durationSeconds",
+                occurredat      as "occurredAt",
+                tz,
+                localdate       as "localDate",
+                source,
+                note,
+                metadata,
+                createdat       as "createdAt"
+    `;
+    return result[0];
+  },
+
+  // Delete a log
+  async delete(id: number) {
+    const result = await sql`
+      DELETE FROM task_logs
+      WHERE id = ${id}
+      RETURNING id
+    `;
+    return result[0] || null;
+  },
+};
+
 export default sql;
