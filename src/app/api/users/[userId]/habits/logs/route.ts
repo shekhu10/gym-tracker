@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { taskLogsDb } from "@/lib/db";
+import { taskLogsDb, tasksDb } from "@/lib/db";
 
 interface Context {
   params: { userId: string };
@@ -47,6 +47,27 @@ export async function POST(req: Request, { params }: Context) {
     note: body.note ?? null,
     metadata: body.metadata ?? {},
   });
+
+  // After logging a COMPLETED entry, update the task's nextExecutionDate
+  try {
+    if (created.status === 'completed') {
+      const task = await tasksDb.findUnique(Number(body.taskId));
+      if (task) {
+        const freqDays = parseInt(String(task.frequencyOfTask || '0'), 10);
+        const occurred = new Date(created.occurredAt);
+        if (Number.isFinite(freqDays) && freqDays > 0 && !isNaN(occurred.getTime())) {
+          const dateOnly = occurred.toLocaleDateString('en-CA');
+          const [y, m, d] = dateOnly.split('-').map(Number);
+          const base = new Date(y, m - 1, d);
+          base.setDate(base.getDate() + freqDays);
+          const nextDate = base.toLocaleDateString('en-CA');
+          await tasksDb.updateDates(task.id, { nextExecutionDate: nextDate, lastExecutionDate: dateOnly });
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Failed to bump nextExecutionDate for task', e);
+  }
   return NextResponse.json(created, { status: 201 });
 }
 

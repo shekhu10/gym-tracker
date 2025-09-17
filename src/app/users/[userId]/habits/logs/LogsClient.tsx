@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Task { id: number; taskName: string }
 
@@ -22,6 +23,7 @@ interface LogItem {
 }
 
 export default function LogsClient({ userId, tasks }: { userId: number; tasks: Task[] }) {
+  const router = useRouter();
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,6 +73,7 @@ export default function LogsClient({ userId, tasks }: { userId: number; tasks: T
         alert(err.error || "Failed to create log");
         return;
       }
+      router.push(`/users/${userId}/habits/logs/success`);
       setQuantity("");
       setUnit("");
       setDurationSeconds("");

@@ -41,9 +41,9 @@ export async function POST(req: Request, { params }: Context) {
     routine: body.routine ?? null,
     displayOrder: body.displayOrder ?? null,
     kind: body.kind ?? null,
-    // Auto-compute dates
+    // Dates: initialize nextExecutionDate to startDate as requested
     lastExecutionDate: body.lastExecutionDate ?? null,
-    nextExecutionDate: body.nextExecutionDate ?? computeNextExecution(body.startDate, body.frequencyOfTask),
+    nextExecutionDate: body.nextExecutionDate ?? body.startDate,
   });
   return NextResponse.json(created, { status: 201 });
 }
