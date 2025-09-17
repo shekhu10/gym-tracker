@@ -58,5 +58,3 @@ export default async function UserGymPage({ params }: Props) {
     </main>
   );
 }
-
-

@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 import { userDb, tasksDb } from "@/lib/db";
 import LogsClient from "./LogsClient";
 
-interface Props { params: { userId: string } }
+interface Props {
+  params: { userId: string };
+}
 
 export const dynamic = "force-dynamic";
 
@@ -21,5 +23,3 @@ export default async function HabitLogsPage({ params }: Props) {
     </div>
   );
 }
-
-

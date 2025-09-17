@@ -19,19 +19,30 @@ export async function POST(req: Request, { params }: Context) {
   const errors: string[] = [];
   if (!body?.taskName) errors.push("taskName is required");
   if (!body?.startDate) errors.push("startDate is required");
-  if (body?.frequencyOfTask === undefined || body?.frequencyOfTask === null || String(body.frequencyOfTask).trim() === "") {
+  if (
+    body?.frequencyOfTask === undefined ||
+    body?.frequencyOfTask === null ||
+    String(body.frequencyOfTask).trim() === ""
+  ) {
     errors.push("frequencyOfTask (days) is required");
   }
-  if (errors.length) return NextResponse.json({ error: errors.join(", ") }, { status: 400 });
+  if (errors.length)
+    return NextResponse.json({ error: errors.join(", ") }, { status: 400 });
 
   // Validate enums
   const routineValues = ["anytime", "morning", "afternoon", "evening"];
   const kindValues = ["binary", "quantity", "timer"];
   if (body.routine && !routineValues.includes(body.routine)) {
-    return NextResponse.json({ error: `Invalid routine. Allowed: ${routineValues.join(', ')}` }, { status: 400 });
+    return NextResponse.json(
+      { error: `Invalid routine. Allowed: ${routineValues.join(", ")}` },
+      { status: 400 },
+    );
   }
   if (body.kind && !kindValues.includes(body.kind)) {
-    return NextResponse.json({ error: `Invalid kind. Allowed: ${kindValues.join(', ')}` }, { status: 400 });
+    return NextResponse.json(
+      { error: `Invalid kind. Allowed: ${kindValues.join(", ")}` },
+      { status: 400 },
+    );
   }
   const created = await tasksDb.create(userId, {
     taskName: body.taskName,
@@ -48,14 +59,16 @@ export async function POST(req: Request, { params }: Context) {
   return NextResponse.json(created, { status: 201 });
 }
 
-function computeNextExecution(startDate: string, frequencyDays: string | number): string | null {
+function computeNextExecution(
+  startDate: string,
+  frequencyDays: string | number,
+): string | null {
   const base = new Date(startDate);
   if (isNaN(base.getTime())) return null;
   const days = parseInt(String(frequencyDays), 10);
-  if (!Number.isFinite(days) || days <= 0) return base.toLocaleDateString("en-CA");
+  if (!Number.isFinite(days) || days <= 0)
+    return base.toLocaleDateString("en-CA");
   const d = new Date(base);
   d.setDate(d.getDate() + days);
   return d.toLocaleDateString("en-CA");
 }
-
-

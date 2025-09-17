@@ -92,7 +92,8 @@ export default function LogDetailPage() {
       </button>
       <h1 className="text-2xl font-bold mb-2 text-white">{log.planName}</h1>
       <p className="mb-4 text-gray-300">
-        {formatDateLong(log.date)}{` (${log.dayName})`}
+        {formatDateLong(log.date)}
+        {` (${log.dayName})`}
       </p>
 
       {/* Workout timing and notes */}
@@ -160,12 +161,10 @@ function ExerciseDisplay({ exercise }: { exercise: Exercise }) {
 
   return (
     <div className="border border-blue-400 p-4 rounded mb-4 bg-gray-900">
-      <h3 className="font-medium mb-2 text-blue-300">
-          {exercise.name}
-        </h3>
-        <div className="space-y-3 bg-black p-3 rounded border border-gray-600">
-          <SetsTable sets={exercise.sets} />
-        </div>
+      <h3 className="font-medium mb-2 text-blue-300">{exercise.name}</h3>
+      <div className="space-y-3 bg-black p-3 rounded border border-gray-600">
+        <SetsTable sets={exercise.sets} />
+      </div>
     </div>
   );
 }

@@ -10,8 +10,7 @@ export const dynamic = "force-dynamic";
 export async function DELETE(_: Request, { params }: Context) {
   const id = Number((await params).logId);
   const deleted = await taskLogsDb.delete(id);
-  if (!deleted) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!deleted)
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(deleted);
 }
-
-

@@ -30,7 +30,7 @@ const dayLabels: Record<DayKey, string> = {
 
 const dateToDayKey = (iso: string): DayKey => {
   // Create date in local timezone to avoid timezone issues
-  const [year, month, day] = iso.split('-').map(Number);
+  const [year, month, day] = iso.split("-").map(Number);
   const date = new Date(year, month - 1, day); // month is 0-indexed
   const idx = date.getDay();
   return dayKeys[(idx + 6) % 7];
@@ -39,7 +39,7 @@ const dateToDayKey = (iso: string): DayKey => {
 const emptyLog: WorkoutLog = {
   workoutDay: "",
   exercises: [],
-  date: new Date().toLocaleDateString('en-CA'), // Returns YYYY-MM-DD in local timezone
+  date: new Date().toLocaleDateString("en-CA"), // Returns YYYY-MM-DD in local timezone
 };
 
 export default function WorkoutLogPage() {

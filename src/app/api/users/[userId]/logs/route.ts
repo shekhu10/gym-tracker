@@ -101,7 +101,7 @@ export async function POST(req: NextRequest, { params }: any) {
   if (date) {
     // Create date in local timezone to avoid timezone issues
     // This ensures the selected date remains the same regardless of server timezone
-    const [year, month, day] = date.split('-').map(Number);
+    const [year, month, day] = date.split("-").map(Number);
     logDate = new Date(year, month - 1, day); // month is 0-indexed
     if (isNaN(logDate.getTime())) {
       return NextResponse.json(

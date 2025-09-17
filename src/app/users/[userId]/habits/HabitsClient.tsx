@@ -30,13 +30,17 @@ export default function HabitsClient({ userId }: { userId: number }) {
   const [taskDescription, setTaskDescription] = useState("");
   const [frequencyOfTask, setFrequencyOfTask] = useState("1");
   const [routine, setRoutine] = useState("");
-  const [startDate, setStartDate] = useState<string>(new Date().toLocaleDateString("en-CA"));
+  const [startDate, setStartDate] = useState<string>(
+    new Date().toLocaleDateString("en-CA"),
+  );
   const [kind, setKind] = useState("binary");
 
   async function fetchHabits() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/users/${userId}/habits`, { cache: "no-store" });
+      const res = await fetch(`/api/users/${userId}/habits`, {
+        cache: "no-store",
+      });
       const data = await res.json();
       setHabits(data);
     } catch (e) {
@@ -86,7 +90,9 @@ export default function HabitsClient({ userId }: { userId: number }) {
 
   async function deleteHabit(id: number) {
     try {
-      const res = await fetch(`/api/users/${userId}/habits/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/users/${userId}/habits/${id}`, {
+        method: "DELETE",
+      });
       if (res.ok) fetchHabits();
     } catch (e) {
       console.error(e);
@@ -96,7 +102,12 @@ export default function HabitsClient({ userId }: { userId: number }) {
   return (
     <div className="space-y-6">
       <div>
-        <Link href={`/users/${userId}/habits/create`} className="btn btn-sm btn-primary">Create Habit</Link>
+        <Link
+          href={`/users/${userId}/habits/create`}
+          className="btn btn-sm btn-primary"
+        >
+          Create Habit
+        </Link>
       </div>
       <div className="flex flex-col sm:flex-row gap-2">
         <input
@@ -111,8 +122,20 @@ export default function HabitsClient({ userId }: { userId: number }) {
           value={taskDescription}
           onChange={(e) => setTaskDescription(e.target.value)}
         />
-        <input type="date" className="input input-bordered" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-        <input type="number" min={1} className="input input-bordered w-36" placeholder="Days" value={frequencyOfTask} onChange={(e) => setFrequencyOfTask(e.target.value)} />
+        <input
+          type="date"
+          className="input input-bordered"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+        <input
+          type="number"
+          min={1}
+          className="input input-bordered w-36"
+          placeholder="Days"
+          value={frequencyOfTask}
+          onChange={(e) => setFrequencyOfTask(e.target.value)}
+        />
         <select
           className="select select-bordered"
           value={routine}
@@ -132,7 +155,9 @@ export default function HabitsClient({ userId }: { userId: number }) {
           <option value="quantity">Quantity</option>
           <option value="timer">Timer</option>
         </select>
-        <button className="btn btn-primary min-w-24" onClick={createHabit}>Add</button>
+        <button className="btn btn-primary min-w-24" onClick={createHabit}>
+          Add
+        </button>
       </div>
 
       {loading ? (
@@ -142,18 +167,29 @@ export default function HabitsClient({ userId }: { userId: number }) {
       ) : (
         <div className="space-y-3">
           {habits.map((h) => (
-            <div key={h.id} className="bg-gray-800 border border-gray-600 rounded-lg p-4 flex items-start justify-between">
+            <div
+              key={h.id}
+              className="bg-gray-800 border border-gray-600 rounded-lg p-4 flex items-start justify-between"
+            >
               <div>
                 <div className="font-medium text-white">{h.taskName}</div>
                 {h.taskDescription && (
-                  <div className="text-gray-300 text-sm">{h.taskDescription}</div>
+                  <div className="text-gray-300 text-sm">
+                    {h.taskDescription}
+                  </div>
                 )}
                 <div className="text-gray-400 text-xs mt-1">
-                  {h.frequencyOfTask || "unspecified"} {h.routine ? `• ${h.routine}` : ""}
+                  {h.frequencyOfTask || "unspecified"}{" "}
+                  {h.routine ? `• ${h.routine}` : ""}
                 </div>
               </div>
               <div className="flex gap-2">
-                <button className="btn btn-sm btn-error" onClick={() => deleteHabit(h.id)}>Delete</button>
+                <button
+                  className="btn btn-sm btn-error"
+                  onClick={() => deleteHabit(h.id)}
+                >
+                  Delete
+                </button>
               </div>
             </div>
           ))}
@@ -165,5 +201,3 @@ export default function HabitsClient({ userId }: { userId: number }) {
     </div>
   );
 }
-
-

@@ -296,11 +296,11 @@ export const workoutLogDb = {
     currentDate: string,
   ) {
     // Calculate date 7 days back in local timezone
-    const [year, month, day] = currentDate.split('-').map(Number);
+    const [year, month, day] = currentDate.split("-").map(Number);
     const currentDateObj = new Date(year, month - 1, day); // month is 0-indexed
     const previousWeekDate = new Date(currentDateObj);
     previousWeekDate.setDate(currentDateObj.getDate() - 7);
-    const previousWeekDateStr = previousWeekDate.toLocaleDateString('en-CA'); // Returns YYYY-MM-DD
+    const previousWeekDateStr = previousWeekDate.toLocaleDateString("en-CA"); // Returns YYYY-MM-DD
 
     const result = await sql`
       SELECT id, "userId", date, "dayName", 
@@ -341,14 +341,19 @@ export const tasksDb = {
   // Update only next/last execution dates safely (no dynamic SQL joins)
   async updateDates(
     id: number,
-    dates: { nextExecutionDate?: string | Date | null; lastExecutionDate?: string | Date | null },
+    dates: {
+      nextExecutionDate?: string | Date | null;
+      lastExecutionDate?: string | Date | null;
+    },
   ) {
-    const nextParam = dates.nextExecutionDate !== undefined
-      ? toIsoDateString(dates.nextExecutionDate)
-      : undefined;
-    const lastParam = dates.lastExecutionDate !== undefined
-      ? toIsoDateString(dates.lastExecutionDate)
-      : undefined;
+    const nextParam =
+      dates.nextExecutionDate !== undefined
+        ? toIsoDateString(dates.nextExecutionDate)
+        : undefined;
+    const lastParam =
+      dates.lastExecutionDate !== undefined
+        ? toIsoDateString(dates.lastExecutionDate)
+        : undefined;
 
     const result = await sql`
       UPDATE tasks
@@ -394,20 +399,30 @@ export const tasksDb = {
   },
 
   // Create a task
-  async create(userId: number, data: {
-    taskName: string;
-    taskDescription?: string | null;
-    startDate: string | Date;
-    frequencyOfTask: string;
-    routine?: string | null;
-    displayOrder?: number | null;
-    kind?: string | null;
-    lastExecutionDate?: string | Date | null;
-    nextExecutionDate?: string | Date | null;
-  }) {
-    const startDate = toIsoDateString(data.startDate) ?? new Date().toLocaleDateString("en-CA");
-    const lastExecutionDate = data.lastExecutionDate !== undefined ? toIsoDateString(data.lastExecutionDate) : null;
-    const nextExecutionDate = data.nextExecutionDate !== undefined ? toIsoDateString(data.nextExecutionDate) : null;
+  async create(
+    userId: number,
+    data: {
+      taskName: string;
+      taskDescription?: string | null;
+      startDate: string | Date;
+      frequencyOfTask: string;
+      routine?: string | null;
+      displayOrder?: number | null;
+      kind?: string | null;
+      lastExecutionDate?: string | Date | null;
+      nextExecutionDate?: string | Date | null;
+    },
+  ) {
+    const startDate =
+      toIsoDateString(data.startDate) ?? new Date().toLocaleDateString("en-CA");
+    const lastExecutionDate =
+      data.lastExecutionDate !== undefined
+        ? toIsoDateString(data.lastExecutionDate)
+        : null;
+    const nextExecutionDate =
+      data.nextExecutionDate !== undefined
+        ? toIsoDateString(data.nextExecutionDate)
+        : null;
 
     const result = await sql`
       INSERT INTO tasks (
@@ -428,30 +443,48 @@ export const tasksDb = {
   },
 
   // Update a task
-  async update(id: number, data: Partial<{
-    taskName: string;
-    taskDescription: string | null;
-    startDate: string | Date | null;
-    lastExecutionDate: string | Date | null;
-    nextExecutionDate: string | Date | null;
-    frequencyOfTask: string | null;
-    routine: string | null;
-    displayOrder: number | null;
-    kind: string | null;
-    archivedAt: string | Date | null;
-  }>) {
+  async update(
+    id: number,
+    data: Partial<{
+      taskName: string;
+      taskDescription: string | null;
+      startDate: string | Date | null;
+      lastExecutionDate: string | Date | null;
+      nextExecutionDate: string | Date | null;
+      frequencyOfTask: string | null;
+      routine: string | null;
+      displayOrder: number | null;
+      kind: string | null;
+      archivedAt: string | Date | null;
+    }>,
+  ) {
     const setFragments: any[] = [];
 
-    if (data.taskName !== undefined) setFragments.push(sql`"taskName" = ${data.taskName}`);
-    if (data.taskDescription !== undefined) setFragments.push(sql`"taskDescription" = ${data.taskDescription}`);
-    if (data.startDate !== undefined) setFragments.push(sql`"startDate" = ${toIsoDateString(data.startDate)}`);
-    if (data.lastExecutionDate !== undefined) setFragments.push(sql`"lastExecutionDate" = ${toIsoDateString(data.lastExecutionDate)}`);
-    if (data.nextExecutionDate !== undefined) setFragments.push(sql`"nextExecutionDate" = ${toIsoDateString(data.nextExecutionDate)}`);
-    if (data.frequencyOfTask !== undefined) setFragments.push(sql`"frequencyOfTask" = ${data.frequencyOfTask}`);
-    if (data.routine !== undefined) setFragments.push(sql`routine = ${data.routine}`);
-    if (data.displayOrder !== undefined) setFragments.push(sql`"displayOrder" = ${data.displayOrder}`);
+    if (data.taskName !== undefined)
+      setFragments.push(sql`"taskName" = ${data.taskName}`);
+    if (data.taskDescription !== undefined)
+      setFragments.push(sql`"taskDescription" = ${data.taskDescription}`);
+    if (data.startDate !== undefined)
+      setFragments.push(sql`"startDate" = ${toIsoDateString(data.startDate)}`);
+    if (data.lastExecutionDate !== undefined)
+      setFragments.push(
+        sql`"lastExecutionDate" = ${toIsoDateString(data.lastExecutionDate)}`,
+      );
+    if (data.nextExecutionDate !== undefined)
+      setFragments.push(
+        sql`"nextExecutionDate" = ${toIsoDateString(data.nextExecutionDate)}`,
+      );
+    if (data.frequencyOfTask !== undefined)
+      setFragments.push(sql`"frequencyOfTask" = ${data.frequencyOfTask}`);
+    if (data.routine !== undefined)
+      setFragments.push(sql`routine = ${data.routine}`);
+    if (data.displayOrder !== undefined)
+      setFragments.push(sql`"displayOrder" = ${data.displayOrder}`);
     if (data.kind !== undefined) setFragments.push(sql`kind = ${data.kind}`);
-    if (data.archivedAt !== undefined) setFragments.push(sql`"archivedAt" = ${typeof data.archivedAt === 'string' ? data.archivedAt : toIsoDateString(data.archivedAt)}`);
+    if (data.archivedAt !== undefined)
+      setFragments.push(
+        sql`"archivedAt" = ${typeof data.archivedAt === "string" ? data.archivedAt : toIsoDateString(data.archivedAt)}`,
+      );
 
     if (setFragments.length === 0) return null;
 
@@ -527,24 +560,29 @@ export const taskLogsDb = {
   },
 
   // Create a log entry
-  async create(userId: number, data: {
-    taskId: number;
-    status?: string;
-    quantity?: number | null;
-    unit?: string | null;
-    durationSeconds?: number | null;
-    occurredAt?: string | Date | null;
-    tz?: string | null;
-    source?: string | null;
-    note?: string | null;
-    metadata?: any;
-  }) {
+  async create(
+    userId: number,
+    data: {
+      taskId: number;
+      status?: string;
+      quantity?: number | null;
+      unit?: string | null;
+      durationSeconds?: number | null;
+      occurredAt?: string | Date | null;
+      tz?: string | null;
+      source?: string | null;
+      note?: string | null;
+      metadata?: any;
+    },
+  ) {
     const occurredAtParam = data.occurredAt
-      ? (typeof data.occurredAt === 'string' ? new Date(data.occurredAt).toISOString() : (data.occurredAt as Date).toISOString())
+      ? typeof data.occurredAt === "string"
+        ? new Date(data.occurredAt).toISOString()
+        : (data.occurredAt as Date).toISOString()
       : new Date().toISOString();
-    const tzParam = data.tz ?? 'Asia/Kolkata';
-    const statusParam = data.status ?? 'completed';
-    const sourceParam = data.source ?? 'manual';
+    const tzParam = data.tz ?? "Asia/Kolkata";
+    const statusParam = data.status ?? "completed";
+    const sourceParam = data.source ?? "manual";
 
     try {
       const result = await sql`
