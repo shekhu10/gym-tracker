@@ -7,10 +7,20 @@ interface Context {
 
 export const dynamic = "force-dynamic";
 
-export async function GET(_: Request, { params }: Context) {
+export async function GET(req: Request, { params }: Context) {
   const userId = Number((await params).userId);
-  const tasks = await tasksDb.findMany(userId);
-  return NextResponse.json(tasks);
+  const url = new URL(req.url);
+  const asOf = url.searchParams.get('asOf');
+  
+  if (asOf && /^\d{4}-\d{2}-\d{2}$/.test(asOf)) {
+    // Return only due tasks for the specified date
+    const tasks = await tasksDb.findDue(userId, asOf);
+    return NextResponse.json(tasks);
+  } else {
+    // Return all tasks
+    const tasks = await tasksDb.findMany(userId);
+    return NextResponse.json(tasks);
+  }
 }
 
 export async function POST(req: Request, { params }: Context) {

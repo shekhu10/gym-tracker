@@ -369,8 +369,9 @@ export const tasksDb = {
     return result[0] || null;
   },
 
-  // Get due tasks (nextExecutionDate <= today). If nextExecutionDate is NULL, fallback to startDate
-  async findDue(userId: number) {
+  // Get due tasks (nextExecutionDate <= asOfDate). If nextExecutionDate is NULL, fallback to startDate
+  async findDue(userId: number, asOfDate?: string) {
+    const comparisonDate = asOfDate ? asOfDate : sql`CURRENT_DATE`;
     const results = await sql`
       SELECT id, "userId", "taskName", "taskDescription",
              "startDate", "lastExecutionDate", "nextExecutionDate",
@@ -379,7 +380,7 @@ export const tasksDb = {
       FROM tasks
       WHERE "userId" = ${userId}
         AND ("archivedAt" IS NULL)
-        AND COALESCE("nextExecutionDate", "startDate")::date <= CURRENT_DATE
+        AND COALESCE("nextExecutionDate", "startDate")::date <= ${comparisonDate}
       ORDER BY COALESCE("displayOrder", 999999), id
     `;
     return results;

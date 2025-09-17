@@ -36,6 +36,7 @@ export default function LogsClient({
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [availableTasks, setAvailableTasks] = useState<Task[]>(tasks);
   const [taskId, setTaskId] = useState<number>(tasks[0]?.id ?? 0);
   const [status, setStatus] = useState<LogItem["status"]>("completed");
   const [quantity, setQuantity] = useState<string>("");
@@ -62,9 +63,31 @@ export default function LogsClient({
     }
   }
 
+  async function fetchDueTasks() {
+    try {
+      const dateOnly = new Date(occurredAt).toISOString().split('T')[0];
+      const res = await fetch(
+        `/api/users/${userId}/habits?asOf=${dateOnly}`,
+      );
+      const data = await res.json();
+      setAvailableTasks(data);
+      // If current taskId is not in the new list, select the first available task
+      if (data.length > 0 && !data.find((t: Task) => t.id === taskId)) {
+        setTaskId(data[0].id);
+      }
+    } catch (e) {
+      console.error(e);
+      setError("Failed to load due tasks");
+    }
+  }
+
   useEffect(() => {
     fetchLogs();
   }, [userId, taskId]);
+
+  useEffect(() => {
+    fetchDueTasks();
+  }, [occurredAt]);
 
   async function createLog() {
     try {
@@ -125,7 +148,7 @@ export default function LogsClient({
               value={taskId}
               onChange={(e) => setTaskId(Number(e.target.value))}
             >
-              {tasks.map((t) => (
+              {availableTasks.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.taskName}
                 </option>
