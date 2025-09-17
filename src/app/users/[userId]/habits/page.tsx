@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { userDb } from "@/lib/db";
+import HabitsClient from "./HabitsClient";
 
 interface Props {
   params: { userId: string };
@@ -24,11 +25,10 @@ export default async function HabitsPage({ params }: Props) {
         <h1 className="text-2xl sm:text-3xl font-semibold text-white mb-2">
           {user.name}&apos;s Habits
         </h1>
-        <p className="text-gray-300">
-          This is a placeholder for managing habits. You can add more features
-          here later.
-        </p>
+        <p className="text-gray-300">Create and manage recurring tasks/habits.</p>
       </div>
+
+      <HabitsClient userId={user.id} />
     </main>
   );
 }
