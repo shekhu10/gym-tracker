@@ -399,7 +399,7 @@ export default function WorkoutLogPage() {
         body: JSON.stringify(filteredLog),
       });
       if (res.ok) {
-        router.push(`/users/${userId}/log/success`);
+        router.push(`/users/${userId}/gym/log/success`);
         return;
       }
       setMessage("Error saving workout log");

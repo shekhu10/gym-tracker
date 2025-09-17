@@ -98,7 +98,7 @@ export default function HistoryPage() {
                   <tr key={log.id} className="border-t border-gray-700">
                     <td className="pr-2 py-1">
                       <a
-                        href={`/users/${userId}/history/${log.id}`}
+                        href={`/users/${userId}/gym/history/${log.id}`}
                         className="text-blue-400 underline hover:text-blue-300"
                       >
                         {log.planName}
