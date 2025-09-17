@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { userDb } from "@/lib/db";
-import HabitsClient from "./HabitsClient";
 
 interface Props {
   params: { userId: string };
@@ -25,10 +25,34 @@ export default async function HabitsPage({ params }: Props) {
         <h1 className="text-2xl sm:text-3xl font-semibold text-white mb-2">
           {user.name}&apos;s Habits
         </h1>
-        <p className="text-gray-300">Create and manage recurring tasks/habits.</p>
+        <p className="text-gray-300">Create, log, and view habit history</p>
       </div>
 
-      <HabitsClient userId={user.id} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Link
+          href={`/users/${user.id}/habits/create`}
+          className="card bg-gray-800 border border-gray-600 p-6 hover:bg-gray-700 transition-colors shadow-sm"
+        >
+          <h2 className="card-title mb-2 text-white">Create Habit</h2>
+          <p className="text-gray-300">Add a new habit</p>
+        </Link>
+
+        <Link
+          href={`/users/${user.id}/habits/logs`}
+          className="card bg-gray-800 border border-gray-600 p-6 hover:bg-gray-700 transition-colors shadow-sm"
+        >
+          <h2 className="card-title mb-2 text-white">Log Habit</h2>
+          <p className="text-gray-300">Record a habit entry</p>
+        </Link>
+
+        <Link
+          href={`/users/${user.id}/habits/history`}
+          className="card bg-gray-800 border border-gray-600 p-6 hover:bg-gray-700 transition-colors shadow-sm"
+        >
+          <h2 className="card-title mb-2 text-white">History</h2>
+          <p className="text-gray-300">View habit logs</p>
+        </Link>
+      </div>
     </main>
   );
 }
