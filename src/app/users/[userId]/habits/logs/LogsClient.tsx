@@ -97,7 +97,8 @@ export default function LogsClient({
   async function createLog() {
     try {
       // Convert date-only format to ISO string for the API
-      const occurredAtISO = new Date(occurredAt + 'T00:00:00').toISOString();
+      const occurredAtDate = occurredAt; // already "YYYY-MM-DD"
+
       
       const res = await fetch(`/api/users/${userId}/habits/logs`, {
         method: "POST",
@@ -108,7 +109,8 @@ export default function LogsClient({
           quantity: quantity ? Number(quantity) : null,
           unit: unit || null,
           durationSeconds: durationSeconds ? Number(durationSeconds) : null,
-          occurredAt: occurredAtISO,
+          occurredAt: occurredAtDate,
+          
           tz:
             Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Kolkata",
           source: "manual",
