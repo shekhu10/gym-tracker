@@ -10,6 +10,7 @@ interface Task {
 
 interface LogItem {
   id: number;
+  habitName: string;
   userId: number;
   taskId: number;
   status: "completed" | "skipped" | "failed";
@@ -39,6 +40,7 @@ export default function LogsClient({
   const [availableTasks, setAvailableTasks] = useState<Task[]>(tasks);
   const [taskId, setTaskId] = useState<number>(tasks[0]?.id ?? 0);
   const [status, setStatus] = useState<LogItem["status"]>("completed");
+  const [habitName, setHabitName] = useState<string>("");
   const [quantity, setQuantity] = useState<string>("");
   const [unit, setUnit] = useState<string>("binary");
   const [durationSeconds, setDurationSeconds] = useState<string>("");
@@ -94,6 +96,14 @@ export default function LogsClient({
     fetchDueTasks();
   }, [occurredAt]);
 
+  // Update habit name when task is selected
+  useEffect(() => {
+    const selectedTask = availableTasks.find(task => task.id === taskId);
+    if (selectedTask) {
+      setHabitName(selectedTask.taskName);
+    }
+  }, [taskId, availableTasks]);
+
   async function createLog() {
     try {
       // Convert date-only format to ISO string for the API
@@ -106,11 +116,11 @@ export default function LogsClient({
         body: JSON.stringify({
           taskId,
           status,
+          habitName,
           quantity: quantity ? Number(quantity) : null,
           unit: unit || null,
           durationSeconds: durationSeconds ? Number(durationSeconds) : null,
           occurredAt: occurredAtDate,
-          
           tz:
             Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Kolkata",
           source: "manual",
@@ -260,7 +270,7 @@ export default function LogsClient({
             >
               <div>
                 <div className="text-white text-sm">
-                  #{l.id} • {l.status} • {l.localDate}
+                  #{l.id} • {l.habitName || "Unknown Habit"} • {l.status} • {l.localDate}
                 </div>
                 <div className="text-gray-300 text-sm">
                   {l.quantity ?? ""} {l.unit ?? ""}{" "}

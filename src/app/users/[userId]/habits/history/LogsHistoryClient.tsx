@@ -9,6 +9,7 @@ interface Task {
 
 interface LogItem {
   id: number;
+  habitName: string;
   userId: number;
   taskId: number;
   status: "completed" | "skipped" | "failed";

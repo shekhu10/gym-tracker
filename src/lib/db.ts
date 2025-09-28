@@ -521,6 +521,7 @@ export const taskLogsDb = {
         SELECT id,
                userid          as "userId",
                taskid          as "taskId",
+               habitname       as "habitName",
                status,
                quantity,
                unit,
@@ -542,6 +543,7 @@ export const taskLogsDb = {
       SELECT id,
              userid          as "userId",
              taskid          as "taskId",
+             habitname       as "habitName",
              status,
              quantity,
              unit,
@@ -565,6 +567,7 @@ export const taskLogsDb = {
     userId: number,
     data: {
       taskId: number;
+      habitName?: string | null;
       status?: string;
       quantity?: number | null;
       unit?: string | null;
@@ -588,15 +591,16 @@ export const taskLogsDb = {
     try {
       const result = await sql`
         INSERT INTO task_logs (
-          userid, taskid, status, quantity, unit, durationseconds,
+          userid, taskid, habitname, status, quantity, unit, durationseconds,
           occurredat, tz, source, note, metadata
         ) VALUES (
-          ${userId}, ${data.taskId}, ${statusParam}, ${data.quantity ?? null}, ${data.unit ?? null}, ${data.durationSeconds ?? null},
+          ${userId}, ${data.taskId}, ${data.habitName ?? null}, ${statusParam}, ${data.quantity ?? null}, ${data.unit ?? null}, ${data.durationSeconds ?? null},
           ${occurredAtParam}, ${tzParam}, ${sourceParam}, ${data.note ?? null}, ${JSON.stringify(data.metadata ?? {})}::jsonb
         )
         RETURNING id,
                   userid          as "userId",
                   taskid          as "taskId",
+                  habitname       as "habitName",
                   status,
                   quantity,
                   unit,
@@ -616,7 +620,8 @@ export const taskLogsDb = {
       const occurredExpr = sql`${occurredAtParam}::timestamptz AT TIME ZONE ${tzParam}`;
       const update = await sql`
         UPDATE task_logs
-        SET status = ${statusParam},
+        SET habitname = ${data.habitName ?? null},
+            status = ${statusParam},
             quantity = ${data.quantity ?? null},
             unit = ${data.unit ?? null},
             durationseconds = ${data.durationSeconds ?? null},
@@ -631,6 +636,7 @@ export const taskLogsDb = {
         RETURNING id,
                   userid          as "userId",
                   taskid          as "taskId",
+                  habitname       as "habitName",
                   status,
                   quantity,
                   unit,

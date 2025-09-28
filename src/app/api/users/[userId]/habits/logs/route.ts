@@ -21,6 +21,7 @@ export async function GET(req: Request, { params }: Context) {
 export async function POST(req: Request, { params }: Context) {
   const userId = Number((await params).userId);
   const body = await req.json();
+  console.log("shekhar 112" + JSON.stringify(body));
   const errors: string[] = [];
   if (!body?.taskId) errors.push("taskId is required");
   if (errors.length)
@@ -44,6 +45,7 @@ export async function POST(req: Request, { params }: Context) {
 
   const created = await taskLogsDb.create(userId, {
     taskId: Number(body.taskId),
+    habitName: body.habitName ?? null,
     status: body.status,
     quantity: body.quantity ?? null,
     unit: body.unit ?? null,
