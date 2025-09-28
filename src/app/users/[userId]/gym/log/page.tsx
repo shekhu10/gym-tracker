@@ -61,7 +61,7 @@ export default function WorkoutLogPage() {
     setLoading(true);
 
     // Fetch both plan and previous week's log data in parallel
-    const planPromise = fetch(`/api/users/${userId}/plans/${selectedDay}`).then(
+    const planPromise = fetch(`/api/users/${userId}/gym/plans/${selectedDay}`).then(
       (r) => (r.ok ? r.json() : null),
     );
 
@@ -69,7 +69,7 @@ export default function WorkoutLogPage() {
     // Convert full day name to short format for database query
     const shortDayName = dayName.substring(0, 3); // "Tuesday" -> "Tue"
     const previousWeekPromise = fetch(
-      `/api/users/${userId}/logs?previousWeek=true&date=${currentLog.date}&day=${shortDayName}`,
+      `/api/users/${userId}/gym/logs?previousWeek=true&date=${currentLog.date}&day=${shortDayName}`,
     ).then((r) => (r.ok ? r.json() : null));
 
     Promise.all([planPromise, previousWeekPromise])
@@ -393,7 +393,7 @@ export default function WorkoutLogPage() {
 
       console.log("Saving filtered log:", JSON.stringify(filteredLog, null, 2));
 
-      const res = await fetch(`/api/users/${userId}/logs`, {
+      const res = await fetch(`/api/users/${userId}/gym/logs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(filteredLog),

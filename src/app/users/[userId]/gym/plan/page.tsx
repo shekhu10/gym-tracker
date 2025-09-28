@@ -32,7 +32,7 @@ export default function WeeklyPlanPage() {
       const obj: Record<string, Plan | null> = {} as any;
       await Promise.all(
         dayKeys.map(async (d) => {
-          const res = await fetch(`/api/users/${userId}/plans/${d}`);
+          const res = await fetch(`/api/users/${userId}/gym/plans/${d}`);
           obj[d] = res.ok ? await res.json() : null;
         }),
       );
@@ -49,7 +49,7 @@ export default function WeeklyPlanPage() {
     setLoading(true);
     setMessage(null);
     const body = plans[selected] ?? emptyPlan;
-    const res = await fetch(`/api/users/${userId}/plans/${selected}`, {
+    const res = await fetch(`/api/users/${userId}/gym/plans/${selected}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -61,7 +61,7 @@ export default function WeeklyPlanPage() {
   const clearCurrent = async () => {
     if (!confirm("Clear this day's plan?")) return;
     setLoading(true);
-    await fetch(`/api/users/${userId}/plans/${selected}`, { method: "DELETE" });
+    await fetch(`/api/users/${userId}/gym/plans/${selected}`, { method: "DELETE" });
     setPlans((prev) => ({ ...prev, [selected]: null }));
     setLoading(false);
   };

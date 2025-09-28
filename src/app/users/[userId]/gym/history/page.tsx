@@ -24,7 +24,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     (async () => {
-      const res = await fetch(`/api/users/${userId}/logs`);
+      const res = await fetch(`/api/users/${userId}/gym/logs`);
       if (res.ok) {
         const data = await res.json();
         setLogs(data);
@@ -42,7 +42,7 @@ export default function HistoryPage() {
 
     setDeleting(logId);
     try {
-      const res = await fetch(`/api/users/${userId}/logs/${logId}`, {
+      const res = await fetch(`/api/users/${userId}/gym/logs/${logId}`, {
         method: "DELETE",
       });
 

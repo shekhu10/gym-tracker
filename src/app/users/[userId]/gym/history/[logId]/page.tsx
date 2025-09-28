@@ -58,7 +58,7 @@ export default function LogDetailPage() {
 
   useEffect(() => {
     (async () => {
-      const res = await fetch(`/api/users/${userId}/logs/${logId}`);
+      const res = await fetch(`/api/users/${userId}/gym/logs/${logId}`);
       if (res.ok) {
         const data = await res.json();
         setLog(data);
