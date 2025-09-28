@@ -98,7 +98,7 @@ export default function LogsHistoryClient({
             >
               <div className="flex items-center justify-between">
                 <div className="text-white text-sm">
-                  #{l.id} • {l.status} • {l.localDate}
+                  #{l.id} • {l.habitName || "Unknown Habit"} • {l.status} • {l.localDate}
                 </div>
                 <div className="text-gray-400 text-xs">{l.source}</div>
               </div>
