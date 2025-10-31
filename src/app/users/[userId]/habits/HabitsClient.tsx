@@ -48,6 +48,7 @@ export default function HabitsClient({ userId }: { userId: number }) {
   const [editingHabitId, setEditingHabitId] = useState<number | null>(null);
   const [editTaskName, setEditTaskName] = useState("");
   const [editTaskDescription, setEditTaskDescription] = useState("");
+  const [editStartDate, setEditStartDate] = useState("");
   const [editFrequencyOfTask, setEditFrequencyOfTask] = useState("");
   const [editRoutine, setEditRoutine] = useState("");
   const [editKind, setEditKind] = useState("");
@@ -137,6 +138,7 @@ export default function HabitsClient({ userId }: { userId: number }) {
     setEditingHabitId(habit.id);
     setEditTaskName(habit.taskName);
     setEditTaskDescription(habit.taskDescription || "");
+    setEditStartDate(habit.startDate ? habit.startDate.split('T')[0] : "");
     setEditFrequencyOfTask(habit.frequencyOfTask || "1");
     setEditRoutine(habit.routine || "anytime");
     setEditKind(habit.kind || "binary");
@@ -150,6 +152,7 @@ export default function HabitsClient({ userId }: { userId: number }) {
     setEditingHabitId(null);
     setEditTaskName("");
     setEditTaskDescription("");
+    setEditStartDate("");
     setEditFrequencyOfTask("");
     setEditRoutine("");
     setEditKind("");
@@ -168,12 +171,23 @@ export default function HabitsClient({ userId }: { userId: number }) {
       alert("Frequency must be at least 1 day");
       return;
     }
+    if (!editStartDate) {
+      alert("Start date is required");
+      return;
+    }
 
     try {
+      // Set nextExecutionDate to startDate (not startDate + frequency)
+      // This ensures the habit is "due" on its start date
+      // After logging, the system will update it to startDate + frequency
+      const nextExecutionDate = editStartDate; // YYYY-MM-DD
+
       const updateData: any = {
         taskName: editTaskName.trim(),
         taskDescription: editTaskDescription.trim() || null,
+        startDate: editStartDate, // Store as-is without timezone conversion
         frequencyOfTask: editFrequencyOfTask,
+        nextExecutionDate: nextExecutionDate,
         routine: editRoutine || null,
         kind: editKind || null,
         displayOrder: editDisplayOrder,
@@ -432,6 +446,18 @@ export default function HabitsClient({ userId }: { userId: number }) {
                         className="w-full border rounded p-2 text-sm"
                         value={editTaskName}
                         onChange={(e) => setEditTaskName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1 text-white">
+                        Start Date *
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full border rounded p-2 text-sm"
+                        value={editStartDate}
+                        onChange={(e) => setEditStartDate(e.target.value)}
                         required
                       />
                     </div>

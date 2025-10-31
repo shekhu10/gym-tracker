@@ -373,7 +373,8 @@ export const tasksDb = {
 
   // Get due tasks (nextExecutionDate <= asOfDate). If nextExecutionDate is NULL, fallback to startDate
   async findDue(userId: number, asOfDate?: string) {
-    const comparisonDate = asOfDate ? asOfDate : sql`CURRENT_DATE`;
+    const comparisonDate = asOfDate ? asOfDate : new Date().toLocaleDateString("en-CA");
+    // Cast DATE columns to TEXT and compare as strings to avoid timezone issues
     const results = await sql`
       SELECT id, "userId", "taskName", "taskDescription",
              "startDate", "lastExecutionDate", "nextExecutionDate",
@@ -384,8 +385,31 @@ export const tasksDb = {
       FROM tasks
       WHERE "userId" = ${userId}
         AND ("archivedAt" IS NULL)
-        AND COALESCE("nextExecutionDate", "startDate")::date <= ${comparisonDate}
+        AND COALESCE("nextExecutionDate"::text, "startDate"::text) <= ${comparisonDate}
       ORDER BY COALESCE("displayOrder", 999999), id
+    `;
+    return results;
+  },
+
+  // Get due tasks with category info
+  async findDueWithCategories(userId: number, asOfDate?: string) {
+    const comparisonDate = asOfDate ? asOfDate : new Date().toLocaleDateString("en-CA");
+    // Cast DATE columns to TEXT and compare as strings to avoid timezone issues
+    const results = await sql`
+      SELECT 
+        t.id, t."userId", t."taskName", t."taskDescription",
+        t."startDate", t."lastExecutionDate", t."nextExecutionDate",
+        t."frequencyOfTask", t.routine, t."displayOrder", t.kind,
+        t."targetValue", t."targetUnit", t."currentProgress", 
+        t."targetAchieved", t."targetAchievedAt", t."categoryId",
+        t."createdAt", t."updatedAt", t."archivedAt",
+        c.name as "categoryName", c.color as "categoryColor"
+      FROM tasks t
+      LEFT JOIN habit_categories c ON t."categoryId" = c.id
+      WHERE t."userId" = ${userId}
+        AND (t."archivedAt" IS NULL)
+        AND COALESCE(t."nextExecutionDate"::text, t."startDate"::text) <= ${comparisonDate}
+      ORDER BY COALESCE(t."displayOrder", 999999), t.id
     `;
     return results;
   },
@@ -719,11 +743,23 @@ export const taskLogsDb = {
       metadata?: any;
     },
   ) {
-    const occurredAtParam = data.occurredAt
-      ? typeof data.occurredAt === "string"
-        ? new Date(data.occurredAt).toISOString()
-        : (data.occurredAt as Date).toISOString()
-      : new Date().toISOString();
+    // Handle occurredAt to avoid timezone issues
+    let occurredAtParam: string;
+    if (data.occurredAt) {
+      if (typeof data.occurredAt === "string") {
+        // If it's a date string (YYYY-MM-DD), append time to make it midnight UTC
+        if (/^\d{4}-\d{2}-\d{2}$/.test(data.occurredAt)) {
+          occurredAtParam = `${data.occurredAt}T00:00:00.000Z`;
+        } else {
+          // Already has time component
+          occurredAtParam = data.occurredAt;
+        }
+      } else {
+        occurredAtParam = (data.occurredAt as Date).toISOString();
+      }
+    } else {
+      occurredAtParam = new Date().toISOString();
+    }
     const tzParam = data.tz ?? "Asia/Kolkata";
     const statusParam = data.status ?? "completed";
     const sourceParam = data.source ?? "manual";

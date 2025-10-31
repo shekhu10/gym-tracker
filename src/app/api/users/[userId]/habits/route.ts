@@ -13,8 +13,8 @@ export async function GET(req: Request, { params }: Context) {
   const asOf = url.searchParams.get('asOf');
   
   if (asOf && /^\d{4}-\d{2}-\d{2}$/.test(asOf)) {
-    // Return only due tasks for the specified date
-    const tasks = await tasksDb.findDue(userId, asOf);
+    // Return only due tasks for the specified date with category info
+    const tasks = await tasksDb.findDueWithCategories(userId, asOf);
     return NextResponse.json(tasks);
   } else {
     // Return all tasks with category info

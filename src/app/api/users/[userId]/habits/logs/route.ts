@@ -63,17 +63,25 @@ export async function POST(req: Request, { params }: Context) {
       const task = await tasksDb.findUnique(Number(body.taskId));
       if (task) {
         const freqDays = parseInt(String(task.frequencyOfTask || "0"), 10);
-        const occurred = new Date(created.occurredAt);
-        if (
-          Number.isFinite(freqDays) &&
-          freqDays > 0 &&
-          !isNaN(occurred.getTime())
-        ) {
-          const dateOnly = occurred.toLocaleDateString("en-CA");
+        
+        // Get the local date from occurredAt without timezone conversion
+        // created.occurredAt could be ISO timestamp or YYYY-MM-DD string
+        let dateOnly: string;
+        if (created.occurredAt.includes('T')) {
+          // ISO timestamp - extract date part
+          dateOnly = created.occurredAt.split('T')[0];
+        } else {
+          // Already a date string
+          dateOnly = created.occurredAt;
+        }
+        
+        if (Number.isFinite(freqDays) && freqDays > 0) {
+          // Calculate next date by adding frequency days
           const [y, m, d] = dateOnly.split("-").map(Number);
-          const base = new Date(y, m - 1, d);
+          const base = new Date(y, m - 1, d); // Create date in local timezone
           base.setDate(base.getDate() + freqDays);
-          const nextDate = base.toLocaleDateString("en-CA");
+          const nextDate = base.toLocaleDateString("en-CA"); // Format as YYYY-MM-DD
+          
           await tasksDb.updateDates(task.id, {
             nextExecutionDate: nextDate,
             lastExecutionDate: dateOnly,
