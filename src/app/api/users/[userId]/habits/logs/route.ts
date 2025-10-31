@@ -65,14 +65,17 @@ export async function POST(req: Request, { params }: Context) {
         const freqDays = parseInt(String(task.frequencyOfTask || "0"), 10);
         
         // Get the local date from occurredAt without timezone conversion
-        // created.occurredAt could be ISO timestamp or YYYY-MM-DD string
+        // created.occurredAt could be Date object, ISO timestamp, or YYYY-MM-DD string
         let dateOnly: string;
-        if (created.occurredAt.includes('T')) {
-          // ISO timestamp - extract date part
+        if (created.occurredAt instanceof Date) {
+          // Date object - convert to YYYY-MM-DD
+          dateOnly = created.occurredAt.toLocaleDateString("en-CA");
+        } else if (typeof created.occurredAt === 'string' && created.occurredAt.includes('T')) {
+          // ISO timestamp string - extract date part
           dateOnly = created.occurredAt.split('T')[0];
         } else {
           // Already a date string
-          dateOnly = created.occurredAt;
+          dateOnly = String(created.occurredAt);
         }
         
         if (Number.isFinite(freqDays) && freqDays > 0) {
