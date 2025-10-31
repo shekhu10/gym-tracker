@@ -332,7 +332,7 @@ export const tasksDb = {
              "startDate", "lastExecutionDate", "nextExecutionDate",
              "frequencyOfTask", routine, "displayOrder", kind,
              "targetValue", "targetUnit", "currentProgress", 
-             "targetAchieved", "targetAchievedAt",
+             "targetAchieved", "targetAchievedAt", "categoryId",
              "createdAt", "updatedAt", "archivedAt"
       FROM tasks
       WHERE id = ${id}
@@ -379,7 +379,7 @@ export const tasksDb = {
              "startDate", "lastExecutionDate", "nextExecutionDate",
              "frequencyOfTask", routine, "displayOrder", kind,
              "targetValue", "targetUnit", "currentProgress", 
-             "targetAchieved", "targetAchievedAt",
+             "targetAchieved", "targetAchievedAt", "categoryId",
              "createdAt", "updatedAt", "archivedAt"
       FROM tasks
       WHERE "userId" = ${userId}
@@ -396,11 +396,30 @@ export const tasksDb = {
              "startDate", "lastExecutionDate", "nextExecutionDate",
              "frequencyOfTask", routine, "displayOrder", kind,
              "targetValue", "targetUnit", "currentProgress", 
-             "targetAchieved", "targetAchievedAt",
+             "targetAchieved", "targetAchievedAt", "categoryId",
              "createdAt", "updatedAt", "archivedAt"
       FROM tasks
       WHERE "userId" = ${userId} AND ("archivedAt" IS NULL)
       ORDER BY COALESCE("displayOrder", 999999), id
+    `;
+    return results;
+  },
+
+  // Get tasks with category info for a user
+  async findManyWithCategories(userId: number) {
+    const results = await sql`
+      SELECT 
+        t.id, t."userId", t."taskName", t."taskDescription", 
+        t."startDate", t."lastExecutionDate", t."nextExecutionDate",
+        t."frequencyOfTask", t.routine, t."displayOrder", t.kind,
+        t."targetValue", t."targetUnit", t."currentProgress", 
+        t."targetAchieved", t."targetAchievedAt", t."categoryId",
+        t."createdAt", t."updatedAt", t."archivedAt",
+        c.name as "categoryName", c.color as "categoryColor"
+      FROM tasks t
+      LEFT JOIN habit_categories c ON t."categoryId" = c.id
+      WHERE t."userId" = ${userId} AND (t."archivedAt" IS NULL)
+      ORDER BY c.name NULLS LAST, COALESCE(t."displayOrder", 999999), t.id
     `;
     return results;
   },
@@ -420,6 +439,7 @@ export const tasksDb = {
       nextExecutionDate?: string | Date | null;
       targetValue?: number | null;
       targetUnit?: string | null;
+      categoryId?: number | null;
     },
   ) {
     const startDate =
@@ -438,18 +458,18 @@ export const tasksDb = {
         "userId", "taskName", "taskDescription", "startDate",
         "lastExecutionDate", "nextExecutionDate",
         "frequencyOfTask", routine, "displayOrder", kind,
-        "targetValue", "targetUnit", "currentProgress"
+        "targetValue", "targetUnit", "currentProgress", "categoryId"
       ) VALUES (
         ${userId}, ${data.taskName}, ${data.taskDescription ?? null}, ${startDate},
         ${lastExecutionDate}, ${nextExecutionDate},
         ${data.frequencyOfTask ?? null}, ${data.routine ?? null}, ${data.displayOrder ?? null}, ${data.kind ?? null},
-        ${data.targetValue ?? null}, ${data.targetUnit ?? null}, 0
+        ${data.targetValue ?? null}, ${data.targetUnit ?? null}, 0, ${data.categoryId ?? null}
       )
       RETURNING id, "userId", "taskName", "taskDescription", 
                 "startDate", "lastExecutionDate", "nextExecutionDate",
                 "frequencyOfTask", routine, "displayOrder", kind,
                 "targetValue", "targetUnit", "currentProgress", 
-                "targetAchieved", "targetAchievedAt",
+                "targetAchieved", "targetAchievedAt", "categoryId",
                 "createdAt", "updatedAt", "archivedAt"
     `;
     return result[0];
@@ -473,6 +493,7 @@ export const tasksDb = {
       currentProgress: number | null;
       targetAchieved: boolean | null;
       targetAchievedAt: string | Date | null;
+      categoryId: number | null;
       archivedAt: string | Date | null;
     }>,
   ) {
@@ -511,6 +532,8 @@ export const tasksDb = {
       setFragments.push(
         sql`"targetAchievedAt" = ${typeof data.targetAchievedAt === "string" ? data.targetAchievedAt : toIsoDateString(data.targetAchievedAt)}`,
       );
+    if (data.categoryId !== undefined)
+      setFragments.push(sql`"categoryId" = ${data.categoryId}`);
     if (data.archivedAt !== undefined)
       setFragments.push(
         sql`"archivedAt" = ${typeof data.archivedAt === "string" ? data.archivedAt : toIsoDateString(data.archivedAt)}`,
@@ -534,7 +557,7 @@ export const tasksDb = {
                 "startDate", "lastExecutionDate", "nextExecutionDate",
                 "frequencyOfTask", routine, "displayOrder", kind,
                 "targetValue", "targetUnit", "currentProgress", 
-                "targetAchieved", "targetAchievedAt",
+                "targetAchieved", "targetAchievedAt", "categoryId",
                 "createdAt", "updatedAt", "archivedAt"
     `;
     return result[0] || null;
@@ -822,6 +845,82 @@ export const taskTargetsHistoryDb = {
                 "startedAt", "achievedAt", "finalProgress"
     `;
     return result[0];
+  },
+};
+
+// Habit Categories database operations
+export const habitCategoriesDb = {
+  // Get all categories for a user
+  async findMany(userId: number) {
+    const results = await sql`
+      SELECT id, "userId", name, color, "createdAt", "updatedAt"
+      FROM habit_categories
+      WHERE "userId" = ${userId}
+      ORDER BY name ASC
+    `;
+    return results;
+  },
+
+  // Get one category by id
+  async findUnique(id: number) {
+    const result = await sql`
+      SELECT id, "userId", name, color, "createdAt", "updatedAt"
+      FROM habit_categories
+      WHERE id = ${id}
+    `;
+    return result[0] || null;
+  },
+
+  // Create a new category
+  async create(userId: number, data: { name: string; color?: string | null }) {
+    const result = await sql`
+      INSERT INTO habit_categories ("userId", name, color)
+      VALUES (${userId}, ${data.name}, ${data.color ?? null})
+      RETURNING id, "userId", name, color, "createdAt", "updatedAt"
+    `;
+    return result[0];
+  },
+
+  // Update a category
+  async update(
+    id: number,
+    data: Partial<{ name: string; color: string | null }>,
+  ) {
+    const setFragments: any[] = [];
+
+    if (data.name !== undefined) setFragments.push(sql`name = ${data.name}`);
+    if (data.color !== undefined) setFragments.push(sql`color = ${data.color}`);
+
+    if (setFragments.length === 0) return null;
+
+    // Add updatedAt
+    setFragments.push(sql`"updatedAt" = CURRENT_TIMESTAMP`);
+
+    // Build SET clause
+    const setClauses: any[] = [];
+    setFragments.forEach((fragment, index) => {
+      setClauses.push(fragment);
+      if (index < setFragments.length - 1) {
+        setClauses.push(sql`, `);
+      }
+    });
+
+    const result = await sql`
+      UPDATE habit_categories SET ${setClauses}
+      WHERE id = ${id}
+      RETURNING id, "userId", name, color, "createdAt", "updatedAt"
+    `;
+    return result[0] || null;
+  },
+
+  // Delete a category
+  async delete(id: number) {
+    const result = await sql`
+      DELETE FROM habit_categories
+      WHERE id = ${id}
+      RETURNING id
+    `;
+    return result[0] || null;
   },
 };
 

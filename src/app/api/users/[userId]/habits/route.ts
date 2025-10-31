@@ -17,8 +17,8 @@ export async function GET(req: Request, { params }: Context) {
     const tasks = await tasksDb.findDue(userId, asOf);
     return NextResponse.json(tasks);
   } else {
-    // Return all tasks
-    const tasks = await tasksDb.findMany(userId);
+    // Return all tasks with category info
+    const tasks = await tasksDb.findManyWithCategories(userId);
     return NextResponse.json(tasks);
   }
 }
@@ -86,6 +86,8 @@ export async function POST(req: Request, { params }: Context) {
     // Target tracking fields
     targetValue: body.targetValue ? Number(body.targetValue) : null,
     targetUnit: body.targetUnit ?? null,
+    // Category
+    categoryId: body.categoryId ? Number(body.categoryId) : null,
   });
   return NextResponse.json(created, { status: 201 });
 }

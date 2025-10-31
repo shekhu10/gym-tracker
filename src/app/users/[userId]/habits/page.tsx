@@ -29,7 +29,7 @@ export default async function HabitsPage({ params }: Props) {
         <p className="text-gray-300">Create, log, and view habit history</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link
           href={`/users/${user.id}/habits/create`}
           className="card bg-gray-800 border border-gray-600 p-6 hover:bg-gray-700 transition-colors shadow-sm"
@@ -52,6 +52,14 @@ export default async function HabitsPage({ params }: Props) {
         >
           <h2 className="card-title mb-2 text-white">History</h2>
           <p className="text-gray-300">View habit logs</p>
+        </Link>
+
+        <Link
+          href={`/users/${user.id}/categories`}
+          className="card bg-purple-800 border border-purple-600 p-6 hover:bg-purple-700 transition-colors shadow-sm"
+        >
+          <h2 className="card-title mb-2 text-white">Categories</h2>
+          <p className="text-gray-300">Manage categories</p>
         </Link>
       </div>
 

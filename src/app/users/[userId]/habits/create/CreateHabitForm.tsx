@@ -1,7 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface Category {
+  id: number;
+  name: string;
+  color: string | null;
+}
 
 export default function CreateHabitForm({ userId }: { userId: number }) {
   const router = useRouter();
@@ -16,7 +22,22 @@ export default function CreateHabitForm({ userId }: { userId: number }) {
   const [kind, setKind] = useState("binary");
   const [targetValue, setTargetValue] = useState("");
   const [targetUnit, setTargetUnit] = useState("hours");
+  const [categoryId, setCategoryId] = useState<string>("");
+  const [categories, setCategories] = useState<Category[]>([]);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const res = await fetch(`/api/users/${userId}/categories`);
+        const data = await res.json();
+        setCategories(data);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    fetchCategories();
+  }, [userId]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,6 +57,7 @@ export default function CreateHabitForm({ userId }: { userId: number }) {
           kind,
           targetValue: targetValue ? Number(targetValue) : null,
           targetUnit: targetValue ? targetUnit : null,
+          categoryId: categoryId ? Number(categoryId) : null,
         }),
       });
       if (!res.ok) {
@@ -158,6 +180,23 @@ export default function CreateHabitForm({ userId }: { userId: number }) {
               <option value="days">days</option>
               <option value="times">times</option>
               <option value="reps">reps</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1 text-white">
+              Category (optional)
+            </label>
+            <select
+              className="w-full border rounded p-2 bg-gray-700 text-gray-200"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+            >
+              <option value="">None</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="sm:col-span-2">
