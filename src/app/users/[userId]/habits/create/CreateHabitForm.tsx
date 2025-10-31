@@ -14,6 +14,8 @@ export default function CreateHabitForm({ userId }: { userId: number }) {
   const [routine, setRoutine] = useState("anytime");
   const [displayOrder, setDisplayOrder] = useState<number>(0);
   const [kind, setKind] = useState("binary");
+  const [targetValue, setTargetValue] = useState("");
+  const [targetUnit, setTargetUnit] = useState("hours");
   const [submitting, setSubmitting] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
@@ -32,6 +34,8 @@ export default function CreateHabitForm({ userId }: { userId: number }) {
           routine,
           displayOrder,
           kind,
+          targetValue: targetValue ? Number(targetValue) : null,
+          targetUnit: targetValue ? targetUnit : null,
         }),
       });
       if (!res.ok) {
@@ -124,6 +128,37 @@ export default function CreateHabitForm({ userId }: { userId: number }) {
               value={displayOrder}
               onChange={(e) => setDisplayOrder(Number(e.target.value))}
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1 text-white">
+              Target Value (optional)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              className="w-full border rounded p-2"
+              value={targetValue}
+              onChange={(e) => setTargetValue(e.target.value)}
+              placeholder="e.g., 300"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1 text-white">
+              Target Unit
+            </label>
+            <select
+              className="w-full border rounded p-2 bg-gray-700 text-gray-200"
+              value={targetUnit}
+              onChange={(e) => setTargetUnit(e.target.value)}
+            >
+              <option value="hours">hours</option>
+              <option value="km">km</option>
+              <option value="minutes">minutes</option>
+              <option value="days">days</option>
+              <option value="times">times</option>
+              <option value="reps">reps</option>
+            </select>
           </div>
           <div className="sm:col-span-2">
             <label className="block text-sm font-medium mb-1 text-white">

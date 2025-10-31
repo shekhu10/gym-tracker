@@ -331,6 +331,8 @@ export const tasksDb = {
       SELECT id, "userId", "taskName", "taskDescription",
              "startDate", "lastExecutionDate", "nextExecutionDate",
              "frequencyOfTask", routine, "displayOrder", kind,
+             "targetValue", "targetUnit", "currentProgress", 
+             "targetAchieved", "targetAchievedAt",
              "createdAt", "updatedAt", "archivedAt"
       FROM tasks
       WHERE id = ${id}
@@ -376,6 +378,8 @@ export const tasksDb = {
       SELECT id, "userId", "taskName", "taskDescription",
              "startDate", "lastExecutionDate", "nextExecutionDate",
              "frequencyOfTask", routine, "displayOrder", kind,
+             "targetValue", "targetUnit", "currentProgress", 
+             "targetAchieved", "targetAchievedAt",
              "createdAt", "updatedAt", "archivedAt"
       FROM tasks
       WHERE "userId" = ${userId}
@@ -391,6 +395,8 @@ export const tasksDb = {
       SELECT id, "userId", "taskName", "taskDescription", 
              "startDate", "lastExecutionDate", "nextExecutionDate",
              "frequencyOfTask", routine, "displayOrder", kind,
+             "targetValue", "targetUnit", "currentProgress", 
+             "targetAchieved", "targetAchievedAt",
              "createdAt", "updatedAt", "archivedAt"
       FROM tasks
       WHERE "userId" = ${userId} AND ("archivedAt" IS NULL)
@@ -412,6 +418,8 @@ export const tasksDb = {
       kind?: string | null;
       lastExecutionDate?: string | Date | null;
       nextExecutionDate?: string | Date | null;
+      targetValue?: number | null;
+      targetUnit?: string | null;
     },
   ) {
     const startDate =
@@ -429,15 +437,19 @@ export const tasksDb = {
       INSERT INTO tasks (
         "userId", "taskName", "taskDescription", "startDate",
         "lastExecutionDate", "nextExecutionDate",
-        "frequencyOfTask", routine, "displayOrder", kind
+        "frequencyOfTask", routine, "displayOrder", kind,
+        "targetValue", "targetUnit", "currentProgress"
       ) VALUES (
         ${userId}, ${data.taskName}, ${data.taskDescription ?? null}, ${startDate},
         ${lastExecutionDate}, ${nextExecutionDate},
-        ${data.frequencyOfTask ?? null}, ${data.routine ?? null}, ${data.displayOrder ?? null}, ${data.kind ?? null}
+        ${data.frequencyOfTask ?? null}, ${data.routine ?? null}, ${data.displayOrder ?? null}, ${data.kind ?? null},
+        ${data.targetValue ?? null}, ${data.targetUnit ?? null}, 0
       )
       RETURNING id, "userId", "taskName", "taskDescription", 
                 "startDate", "lastExecutionDate", "nextExecutionDate",
                 "frequencyOfTask", routine, "displayOrder", kind,
+                "targetValue", "targetUnit", "currentProgress", 
+                "targetAchieved", "targetAchievedAt",
                 "createdAt", "updatedAt", "archivedAt"
     `;
     return result[0];
@@ -456,6 +468,11 @@ export const tasksDb = {
       routine: string | null;
       displayOrder: number | null;
       kind: string | null;
+      targetValue: number | null;
+      targetUnit: string | null;
+      currentProgress: number | null;
+      targetAchieved: boolean | null;
+      targetAchievedAt: string | Date | null;
       archivedAt: string | Date | null;
     }>,
   ) {
@@ -482,6 +499,18 @@ export const tasksDb = {
     if (data.displayOrder !== undefined)
       setFragments.push(sql`"displayOrder" = ${data.displayOrder}`);
     if (data.kind !== undefined) setFragments.push(sql`kind = ${data.kind}`);
+    if (data.targetValue !== undefined)
+      setFragments.push(sql`"targetValue" = ${data.targetValue}`);
+    if (data.targetUnit !== undefined)
+      setFragments.push(sql`"targetUnit" = ${data.targetUnit}`);
+    if (data.currentProgress !== undefined)
+      setFragments.push(sql`"currentProgress" = ${data.currentProgress}`);
+    if (data.targetAchieved !== undefined)
+      setFragments.push(sql`"targetAchieved" = ${data.targetAchieved}`);
+    if (data.targetAchievedAt !== undefined)
+      setFragments.push(
+        sql`"targetAchievedAt" = ${typeof data.targetAchievedAt === "string" ? data.targetAchievedAt : toIsoDateString(data.targetAchievedAt)}`,
+      );
     if (data.archivedAt !== undefined)
       setFragments.push(
         sql`"archivedAt" = ${typeof data.archivedAt === "string" ? data.archivedAt : toIsoDateString(data.archivedAt)}`,
@@ -496,6 +525,8 @@ export const tasksDb = {
       RETURNING id, "userId", "taskName", "taskDescription", 
                 "startDate", "lastExecutionDate", "nextExecutionDate",
                 "frequencyOfTask", routine, "displayOrder", kind,
+                "targetValue", "targetUnit", "currentProgress", 
+                "targetAchieved", "targetAchievedAt",
                 "createdAt", "updatedAt", "archivedAt"
     `;
     return result[0] || null;
@@ -507,6 +538,84 @@ export const tasksDb = {
       DELETE FROM tasks
       WHERE id = ${id}
       RETURNING id
+    `;
+    return result[0] || null;
+  },
+
+  // Update progress for a task (increment by quantity from log)
+  async updateProgress(id: number, quantityToAdd: number) {
+    const result = await sql`
+      UPDATE tasks
+      SET "currentProgress" = COALESCE("currentProgress", 0) + ${quantityToAdd}
+      WHERE id = ${id}
+      RETURNING id, "userId", "taskName", "taskDescription", 
+                "startDate", "lastExecutionDate", "nextExecutionDate",
+                "frequencyOfTask", routine, "displayOrder", kind,
+                "targetValue", "targetUnit", "currentProgress", 
+                "targetAchieved", "targetAchievedAt",
+                "createdAt", "updatedAt", "archivedAt"
+    `;
+    return result[0] || null;
+  },
+
+  // Check and mark target as achieved if progress meets or exceeds target
+  async checkAndMarkAchieved(id: number) {
+    const result = await sql`
+      UPDATE tasks
+      SET "targetAchieved" = true,
+          "targetAchievedAt" = CURRENT_TIMESTAMP
+      WHERE id = ${id}
+        AND "targetValue" IS NOT NULL
+        AND COALESCE("currentProgress", 0) >= "targetValue"
+        AND "targetAchieved" = false
+      RETURNING id, "userId", "taskName", "taskDescription", 
+                "startDate", "lastExecutionDate", "nextExecutionDate",
+                "frequencyOfTask", routine, "displayOrder", kind,
+                "targetValue", "targetUnit", "currentProgress", 
+                "targetAchieved", "targetAchievedAt",
+                "createdAt", "updatedAt", "archivedAt"
+    `;
+    return result[0] || null;
+  },
+
+  // Archive current target to history and reset for new target
+  async archiveCurrentTargetAndSetNew(
+    id: number,
+    newTargetValue: number,
+    newTargetUnit: string,
+  ) {
+    // First, get the current task data
+    const task = await this.findUnique(id);
+    if (!task) return null;
+
+    // If there's an existing target, archive it
+    if (task.targetValue !== null && task.targetValue !== undefined) {
+      await sql`
+        INSERT INTO task_targets_history (
+          "taskId", "targetValue", "targetUnit", 
+          "startedAt", "achievedAt", "finalProgress"
+        ) VALUES (
+          ${id}, ${task.targetValue}, ${task.targetUnit || ""},
+          ${task.createdAt}, ${task.targetAchievedAt || null}, ${task.currentProgress || 0}
+        )
+      `;
+    }
+
+    // Reset task with new target
+    const result = await sql`
+      UPDATE tasks
+      SET "targetValue" = ${newTargetValue},
+          "targetUnit" = ${newTargetUnit},
+          "currentProgress" = 0,
+          "targetAchieved" = false,
+          "targetAchievedAt" = NULL
+      WHERE id = ${id}
+      RETURNING id, "userId", "taskName", "taskDescription", 
+                "startDate", "lastExecutionDate", "nextExecutionDate",
+                "frequencyOfTask", routine, "displayOrder", kind,
+                "targetValue", "targetUnit", "currentProgress", 
+                "targetAchieved", "targetAchievedAt",
+                "createdAt", "updatedAt", "archivedAt"
     `;
     return result[0] || null;
   },
@@ -662,6 +771,49 @@ export const taskLogsDb = {
       RETURNING id
     `;
     return result[0] || null;
+  },
+};
+
+// Task targets history database operations
+export const taskTargetsHistoryDb = {
+  // Get target history for a specific task
+  async findByTaskId(taskId: number) {
+    const results = await sql`
+      SELECT id, "taskId", "targetValue", "targetUnit",
+             "startedAt", "achievedAt", "finalProgress"
+      FROM task_targets_history
+      WHERE "taskId" = ${taskId}
+      ORDER BY "startedAt" DESC
+    `;
+    return results;
+  },
+
+  // Create a history entry
+  async create(data: {
+    taskId: number;
+    targetValue: number;
+    targetUnit: string;
+    startedAt: string | Date;
+    achievedAt?: string | Date | null;
+    finalProgress?: number | null;
+  }) {
+    const startedAtParam = toIsoTimestampString(data.startedAt);
+    const achievedAtParam = data.achievedAt
+      ? toIsoTimestampString(data.achievedAt)
+      : null;
+
+    const result = await sql`
+      INSERT INTO task_targets_history (
+        "taskId", "targetValue", "targetUnit",
+        "startedAt", "achievedAt", "finalProgress"
+      ) VALUES (
+        ${data.taskId}, ${data.targetValue}, ${data.targetUnit},
+        ${startedAtParam}, ${achievedAtParam}, ${data.finalProgress ?? null}
+      )
+      RETURNING id, "taskId", "targetValue", "targetUnit",
+                "startedAt", "achievedAt", "finalProgress"
+    `;
+    return result[0];
   },
 };
 

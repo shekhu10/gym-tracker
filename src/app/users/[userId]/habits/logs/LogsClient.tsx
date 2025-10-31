@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 interface Task {
   id: number;
   taskName: string;
+  targetValue?: number | null;
+  targetUnit?: string | null;
+  currentProgress?: number | null;
+  targetAchieved?: boolean | null;
 }
 
 interface LogItem {
@@ -138,6 +142,7 @@ export default function LogsClient({
       setDurationSeconds("");
       setNote("");
       fetchLogs();
+      fetchDueTasks(); // Refresh to get updated progress
     } catch (e) {
       console.error(e);
       alert("Failed to create log");
@@ -255,6 +260,44 @@ export default function LogsClient({
             Save Log
           </button>
         </div>
+
+        {/* Display current task progress */}
+        {(() => {
+          const selectedTask = availableTasks.find((t) => t.id === taskId);
+          if (
+            selectedTask &&
+            selectedTask.targetValue !== null &&
+            selectedTask.targetValue !== undefined
+          ) {
+            return (
+              <div className="mt-3 p-3 bg-gray-900 rounded border border-gray-600">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-white text-sm font-medium">
+                    Current Progress
+                  </div>
+                  {selectedTask.targetAchieved && (
+                    <span className="text-xs bg-green-600 text-white px-2 py-1 rounded">
+                      Target Achieved! 🎉
+                    </span>
+                  )}
+                </div>
+                <div className="text-blue-400 text-sm">
+                  {selectedTask.currentProgress || 0} / {selectedTask.targetValue}{" "}
+                  {selectedTask.targetUnit}
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+                  <div
+                    className={`h-2 rounded-full ${selectedTask.targetAchieved ? "bg-green-500" : "bg-blue-500"}`}
+                    style={{
+                      width: `${Math.min(100, ((selectedTask.currentProgress || 0) / selectedTask.targetValue) * 100)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
       </div>
 
       {loading ? (

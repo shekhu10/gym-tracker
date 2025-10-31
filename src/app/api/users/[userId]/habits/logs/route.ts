@@ -79,10 +79,22 @@ export async function POST(req: Request, { params }: Context) {
             lastExecutionDate: dateOnly,
           });
         }
+
+        // Update progress if quantity was logged and target is set
+        if (
+          created.quantity !== null &&
+          created.quantity !== undefined &&
+          task.targetValue !== null &&
+          task.targetValue !== undefined
+        ) {
+          await tasksDb.updateProgress(task.id, created.quantity);
+          // Check if target is achieved
+          await tasksDb.checkAndMarkAchieved(task.id);
+        }
       }
     }
   } catch (e) {
-    console.error("Failed to bump nextExecutionDate for task", e);
+    console.error("Failed to bump nextExecutionDate or update progress for task", e);
   }
   return NextResponse.json(created, { status: 201 });
 }

@@ -54,6 +54,24 @@ export async function POST(req: Request, { params }: Context) {
       { status: 400 },
     );
   }
+
+  // Validate target fields if provided
+  if (body.targetValue !== undefined && body.targetValue !== null) {
+    const targetValue = Number(body.targetValue);
+    if (isNaN(targetValue) || targetValue <= 0) {
+      return NextResponse.json(
+        { error: "targetValue must be a positive number" },
+        { status: 400 },
+      );
+    }
+    if (!body.targetUnit || String(body.targetUnit).trim() === "") {
+      return NextResponse.json(
+        { error: "targetUnit is required when targetValue is provided" },
+        { status: 400 },
+      );
+    }
+  }
+
   const created = await tasksDb.create(userId, {
     taskName: body.taskName,
     taskDescription: body.taskDescription ?? null,
@@ -65,6 +83,9 @@ export async function POST(req: Request, { params }: Context) {
     // Dates: initialize nextExecutionDate to startDate as requested
     lastExecutionDate: body.lastExecutionDate ?? null,
     nextExecutionDate: body.nextExecutionDate ?? body.startDate,
+    // Target tracking fields
+    targetValue: body.targetValue ? Number(body.targetValue) : null,
+    targetUnit: body.targetUnit ?? null,
   });
   return NextResponse.json(created, { status: 201 });
 }
