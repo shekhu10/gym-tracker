@@ -518,9 +518,17 @@ export const tasksDb = {
 
     if (setFragments.length === 0) return null;
 
-    // Join parameterized fragments safely for the SET clause
+    // Build SET clause by interleaving fragments with commas
+    const setClauses: any[] = [];
+    setFragments.forEach((fragment, index) => {
+      setClauses.push(fragment);
+      if (index < setFragments.length - 1) {
+        setClauses.push(sql`, `);
+      }
+    });
+
     const result = await sql`
-      UPDATE tasks SET ${(sql as any).join(setFragments, sql`, `)}
+      UPDATE tasks SET ${setClauses}
       WHERE id = ${id}
       RETURNING id, "userId", "taskName", "taskDescription", 
                 "startDate", "lastExecutionDate", "nextExecutionDate",
