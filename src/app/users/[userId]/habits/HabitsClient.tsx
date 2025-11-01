@@ -95,6 +95,18 @@ export default function HabitsClient({ userId }: { userId: number }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
+  useEffect(() => {
+    // Collapse all categories by default when habits are loaded
+    const categoryKeys = new Set<string>();
+    habits.forEach((habit) => {
+      const categoryKey = habit.categoryId
+        ? `cat-${habit.categoryId}`
+        : "uncategorized";
+      categoryKeys.add(categoryKey);
+    });
+    setCollapsedCategories(categoryKeys);
+  }, [habits]);
+
   async function deleteHabit(id: number) {
     try {
       const res = await fetch(`/api/users/${userId}/habits/${id}`, {

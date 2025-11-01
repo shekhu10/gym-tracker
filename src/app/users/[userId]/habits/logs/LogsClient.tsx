@@ -119,6 +119,18 @@ export default function LogsClient({
     }
   }, [taskId, availableTasks]);
 
+  useEffect(() => {
+    // Collapse all categories by default when tasks are loaded
+    const categoryKeys = new Set<string>();
+    availableTasks.forEach((task) => {
+      const categoryKey = task.categoryId
+        ? `cat-${task.categoryId}`
+        : "uncategorized";
+      categoryKeys.add(categoryKey);
+    });
+    setCollapsedCategories(categoryKeys);
+  }, [availableTasks]);
+
   async function createLog() {
     try {
       // Convert date-only format to ISO string for the API
