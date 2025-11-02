@@ -50,7 +50,7 @@ export default function LogsClient({
   const [taskId, setTaskId] = useState<number | null>(null);
   const [status, setStatus] = useState<LogItem["status"]>("completed");
   const [habitName, setHabitName] = useState<string>("");
-  const [quantity, setQuantity] = useState<string>("");
+  const [quantity, setQuantity] = useState<string>("1");
   const [unit, setUnit] = useState<string>("binary");
   const [durationSeconds, setDurationSeconds] = useState<string>("");
   const [occurredAt, setOccurredAt] = useState<string>(() => {
@@ -160,8 +160,8 @@ export default function LogsClient({
         return;
       }
       router.push(`/users/${userId}/habits/logs/success`);
-      setQuantity("");
-      setUnit("");
+      setQuantity("1");
+      setUnit("binary");
       setDurationSeconds("");
       setNote("");
       fetchLogs();
